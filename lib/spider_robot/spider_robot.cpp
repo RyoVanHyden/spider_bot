@@ -53,9 +53,9 @@ Spider_Robot::Spider_Robot(){
     W_posA[1] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);        
     W_posA[2] = Position(walk_x_IN, walk_y, walk_z);       
 
-    W_posB[0] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z + 0.5);           
-    W_posB[1] = Position(walk_x_OUT, walk_y, walk_z + 0.5);        
-    W_posB[2] = Position(walk_x_IN, walk_y, walk_z + 0.5);        
+    W_posB[0] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z + 0.35);           
+    W_posB[1] = Position(walk_x_OUT, walk_y, walk_z + 0.35);        
+    W_posB[2] = Position(walk_x_IN, walk_y, walk_z + 0.35);        
 
     W_posC[0] = Position(walk_x_IN, walk_y, walk_z);        
     W_posC[1] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z);      
@@ -73,9 +73,9 @@ Spider_Robot::Spider_Robot(){
     LW_posA[1] = Position(-0.0865, walk_y - lat_step_size, walk_z);
     LW_posA[2] = Position(-0.650, walk_y, walk_z);
 
-    LW_posB[0] = Position(-1.210, walk_y + lat_step_size, walk_z + 0.5);
-    LW_posB[1] = Position(-0.9315, walk_y + lat_step_size/2, walk_z + 0.5);
-    LW_posB[2] = Position(-0.65, walk_y, walk_z + 0.5);
+    LW_posB[0] = Position(-1.210, walk_y + lat_step_size, walk_z + 0.35);
+    LW_posB[1] = Position(-0.9315, walk_y + lat_step_size/2, walk_z + 0.35);
+    LW_posB[2] = Position(-0.65, walk_y, walk_z + 0.35);
 
     LW_posC[0] = Position(2.6517, walk_y + lat_step_size/2, walk_z);
     LW_posC[1] = Position(1.0483, walk_y - lat_step_size/2, walk_z);
@@ -96,9 +96,9 @@ Spider_Robot::Spider_Robot(){
     R_posA[1] = Position(-x_rot, y_rot, walk_z);
     R_posA[2] = Position(0, walk_y, walk_z);
     
-    R_posB[0] = Position(0, walk_y, walk_z + 0.5);
-    R_posB[1] = Position(x_rot, y_rot, walk_z + 0.5);
-    R_posB[2] = Position(0, walk_y, walk_z + 0.5);
+    R_posB[0] = Position(0, walk_y, walk_z + 0.35);
+    R_posB[1] = Position(x_rot, y_rot, walk_z + 0.35);
+    R_posB[2] = Position(0, walk_y, walk_z + 0.35);
     
     R_posC[0] = Position(0, walk_y, walk_z);
     R_posC[1] = Position(-x_rot, y_rot, walk_z);
@@ -922,9 +922,9 @@ void Spider_Robot::updateWalkingPositions(){
     W_posA[1] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);        
     W_posA[2] = Position(walk_x_IN, walk_y, walk_z);       
 
-    W_posB[0] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z + 0.5);           
-    W_posB[1] = Position(walk_x_OUT, walk_y, walk_z + 0.5);        
-    W_posB[2] = Position(walk_x_IN, walk_y, walk_z + 0.5);        
+    W_posB[0] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z + 0.35);           
+    W_posB[1] = Position(walk_x_OUT, walk_y, walk_z + 0.35);        
+    W_posB[2] = Position(walk_x_IN, walk_y, walk_z + 0.35);        
 
     W_posC[0] = Position(walk_x_IN, walk_y, walk_z);        
     W_posC[1] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z);      
@@ -940,9 +940,9 @@ void Spider_Robot::updateWalkingPositions(){
     LW_posA[1] = Position(-0.0865, walk_y - lat_step_size, walk_z);
     LW_posA[2] = Position(-0.650, walk_y, walk_z);
 
-    LW_posB[0] = Position(-1.210, walk_y + lat_step_size, walk_z + 0.5);
-    LW_posB[1] = Position(-0.9315, walk_y + lat_step_size/2, walk_z + 0.5);
-    LW_posB[2] = Position(-0.65, walk_y, walk_z + 0.5);
+    LW_posB[0] = Position(-1.210, walk_y + lat_step_size, walk_z + 0.35);
+    LW_posB[1] = Position(-0.9315, walk_y + lat_step_size/2, walk_z + 0.35);
+    LW_posB[2] = Position(-0.65, walk_y, walk_z + 0.35);
 
     LW_posC[0] = Position(2.6517, walk_y + lat_step_size/2, walk_z);
     LW_posC[1] = Position(1.0483, walk_y - lat_step_size/2, walk_z);
@@ -961,9 +961,9 @@ void Spider_Robot::updateWalkingPositions(){
     R_posA[1] = Position(-x_rot, y_rot, walk_z);
     R_posA[2] = Position(0, walk_y, walk_z);
     
-    R_posB[0] = Position(0, walk_y, walk_z + 0.5);
-    R_posB[1] = Position(x_rot, y_rot, walk_z + 0.5);
-    R_posB[2] = Position(0, walk_y, walk_z + 0.5);
+    R_posB[0] = Position(0, walk_y, walk_z + 0.35);
+    R_posB[1] = Position(x_rot, y_rot, walk_z + 0.35);
+    R_posB[2] = Position(0, walk_y, walk_z + 0.35);
     
     R_posC[0] = Position(0, walk_y, walk_z);
     R_posC[1] = Position(-x_rot, y_rot, walk_z);
