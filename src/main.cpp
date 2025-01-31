@@ -1,3 +1,12 @@
+// TOGGLE MODES
+
+#define DEBUG 0
+#define MAIN_CODE 0
+#define TESTS 1
+
+// --------------------------------------------------------------
+
+#if MAIN_CODE
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -440,12 +449,13 @@ void loop() {
     }
      
     //Serial.print("[END] Now = " + String(now) + ", Last_time = " + String(last_time) + ", Interval = " + String(interval) + "\n");
-   
 
 }
+#endif
 
+// ------------------------------------------------------------------------------------------------
 
-/*
+#if DEBUG
 #include <Arduino.h>
 void setup() {
     pinMode(25, OUTPUT); // Set GPIO 25 as an output
@@ -461,5 +471,77 @@ void loop() {
     digitalWrite(25, LOW);  // Turn the LED off
     delay(50);             // Wait for 500 milliseconds
 }
+#endif
 
-*/
+// ------------------------------------------------------------------------------------------------
+
+#if TESTS
+
+#include <Wire.h>
+
+TwoWire rgbWire(20, 21);
+TwoWire tofWire(14, 15);
+TwoWire driverWire(18, 19);
+
+void setup() {
+  Serial.begin(115200);
+  driverWire.begin();
+  tofWire.begin();
+  rgbWire.begin();
+
+  Serial.println("I2C Continuous Scanner");
+}
+
+void loop() {
+  // Start scanning for I2C devices
+  Serial.println("Scanning driverWire I2C devices...");
+
+  // Scan for devices on the I2C bus
+  for (byte i = 8; i < 120; i++) {
+    driverWire.beginTransmission(i);
+    byte error = driverWire.endTransmission();
+
+    if (error == 0) {
+      Serial.print("I2C device found at address 0x");
+      if (i < 16) {
+        Serial.print("0");
+      }
+      Serial.println(i, HEX);
+    }
+  }
+
+  // Start scanning for I2C devices
+  Serial.println("Scanning tofWire I2C devices...");
+
+  // Scan for devices on the I2C bus
+  for (byte i = 8; i < 120; i++) {
+    tofWire.beginTransmission(i);
+    byte error = tofWire.endTransmission();
+
+    if (error == 0) {
+      Serial.print("I2C device found at address 0x");
+      if (i < 16) {
+        Serial.print("0");
+      }
+      Serial.println(i, HEX);
+    }
+  }
+
+    // Start scanning for I2C devices
+  Serial.println("Scanning rgbWire I2C devices...");
+  // Scan for devices on the I2C bus
+  for (byte i = 8; i < 120; i++) {
+    rgbWire.beginTransmission(i);
+    byte error = rgbWire.endTransmission();
+
+    if (error == 0) {
+      Serial.print("I2C device found at address 0x");
+      if (i < 16) {
+        Serial.print("0");
+      }
+      Serial.println(i, HEX);
+    }
+  }
+}
+
+#endif
