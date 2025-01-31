@@ -16,7 +16,6 @@ Spider_Robot::Spider_Robot(){
     // These positions are CARTESIAN oriented, and refer to the Y and Z coordinates of the foot. The X should be obtained trough Trigonometry
     // for the OUTTER position, the angle is 28.27º, for the INNER position its -9.93º
     
-    
     higher_pos[0][0] = 3.75;
     higher_pos[0][1] = -5.7;
     higher_pos[1][0] = 4.10;
@@ -781,9 +780,10 @@ void Spider_Robot::incline(bool enableA, bool enableB, bool enableC, bool enable
 
 bool Spider_Robot::lift(bool enableA, bool enableB, bool enableC, bool enableD, bool next){
     
-    if (hight_index > 9){
+    if (hight_index>=9){
         return false;
     }
+    hight_index++;
 
     //Returns the position for the higher hights
     float y = higher_pos[hight_index][0];
@@ -831,29 +831,23 @@ bool Spider_Robot::lift(bool enableA, bool enableB, bool enableC, bool enableD, 
 
     updateWalkingPositions();
 
-    //Increments the hight index
-    if (!higherPositionAvailable()){
-        return false;
-    } else {
-        hight_index++;
-        return true;
-    }
-
 }
 
 bool Spider_Robot::lower(bool enableA, bool enableB, bool enableC, bool enableD, bool next){
     
-    if (hight_index < 0){
+    if (hight_index<=0){
         return false;
     }
+
+    hight_index--;
 
     //Returns the position for the higher hights
     float y = higher_pos[hight_index][0];
     float z = higher_pos[hight_index][1];
 
     //Computes the X coordiante giving the Y and thetas
-    float x_AB = -(y/cos(INNER_theta1 - PI/2))*sin(INNER_theta1 - PI/2);
-    float x_CD = -(y/cos(OUTTER_theta1 - PI/2))*sin(OUTTER_theta1 - PI/2);
+    float x_AB = - (y/cos(INNER_theta1 - PI/2))*sin(INNER_theta1 - PI/2);
+    float x_CD = - (y/cos(OUTTER_theta1 - PI/2))*sin(OUTTER_theta1 - PI/2);
 
     Position new_posA = Position(x_AB, y, z);
     Position new_posB = Position(x_AB, y, z);
@@ -892,14 +886,6 @@ bool Spider_Robot::lower(bool enableA, bool enableB, bool enableC, bool enableD,
     SMALL_f_step_size = SMALL_f_step_size + 0.5;
 
     updateWalkingPositions();
-
-    //Increments the hight index
-    if (!lowerPositionAvailable()){
-        return false;
-    } else {
-        hight_index--;
-        return true;
-    }
 
     return true;
 }
