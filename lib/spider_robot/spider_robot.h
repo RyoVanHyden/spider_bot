@@ -27,6 +27,8 @@ private:
     Position R_posA[3], R_posB[3], R_posC[3], R_posD[3];
     Position I_posA[3], I_posB[3], I_posC[3], I_posD[3];
 
+    Position Current_location, Desired_location;
+
     //Theta 1 for INITAL POSITION, in radians, for Legs A (Innner) and C (Outter)
     #define INNER_theta1  1.7424
     #define OUTTER_theta1 1.1125
@@ -86,6 +88,14 @@ public:
     void stop();
     bool legsOnDesiredPositions();
     int getPosIndex();
+
+    Position getCurrentLocation();
+    void setCurrentLocation(Position pos);
+
+    Position getDesiredLocation();
+    void setDesiredLocation(Position pos);
+
+    bool isOnDesiredLocation();
 
 };
 

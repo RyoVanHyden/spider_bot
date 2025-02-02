@@ -149,6 +149,26 @@ bool Spider_Robot::legsOnDesiredPositions(){
 
 }
 
+Position Spider_Robot::getCurrentLocation(){
+    return Current_location;
+}
+
+void Spider_Robot::setCurrentLocation(Position pos){
+    Current_location = pos;
+}
+
+Position Spider_Robot::getDesiredLocation(){
+    return Desired_location;
+}
+
+void Spider_Robot::setDesiredLocation(Position pos){
+    Desired_location = pos;
+}
+
+bool Spider_Robot::isOnDesiredLocation(){
+    return (Current_location.isOnPosition(Desired_location));
+}
+
 void Spider_Robot::stop(){
 
     START_WALKING = false;
