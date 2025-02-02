@@ -40,7 +40,7 @@ Spider_Robot::Spider_Robot(){
     hight_index = 0;
 
     // Robot's own Location ---------------------------------------------
-    
+
     Current_location = Position(0,0,0);
     Desired_location = Position(0,0,0);
     robot_step_size = 10;
@@ -188,7 +188,7 @@ void Spider_Robot::stop(){
 
 }
 
-void Spider_Robot::walk(bool enableA, bool enableB, bool enableC, bool enableD, bool next){
+void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD, bool next, Position Desired_Location){
 
     if (walk_fsm.state == sm_idle && START_WALKING && next){
         walk_fsm.new_state = sm_compute;
@@ -198,14 +198,18 @@ void Spider_Robot::walk(bool enableA, bool enableB, bool enableC, bool enableD, 
         legB.resetAllTrajectoryComputations();
         legC.resetAllTrajectoryComputations();
         legD.resetAllTrajectoryComputations();
-    } else if (walk_fsm.state == sm_compute && next){
+        setDesiredLocation(Desired_Location);
+    } else if (walk_fsm.state == sm_compute && next && !isOnDesiredLocation()){
         walk_fsm.new_state = sm_moving;
-    } else if (walk_fsm.state == sm_moving && legsOnDesiredPositions() && next){
+    } else if (walk_fsm.state == sm_compute && next && isOnDesiredLocation()){
+        walk_fsm.new_state = sm_idle;
+    } else if (walk_fsm.state == sm_moving && next && legsOnDesiredPositions()){
         walk_fsm.new_state = sm_compute;
         if (pos_index<5){
             pos_index++;
         } else {
             pos_index = 0;
+            stepForward();
         }
     }
 

@@ -78,7 +78,7 @@ public:
     void attachLegs(LEG& legA, LEG& legB, LEG& legC, LEG& legD);
     void initializePositions(Position init_posA, Position init_posB, Position init_posC, Position init_posD);
 
-    void walk(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
+    void walkTo(bool enableA, bool enableB, bool enableC, bool enableD, bool next, Position Desired_location);
     void lateral_walk(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     void rotate(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     void incline(bool enableA, bool enableB, bool enableC, bool enableD, bool next);

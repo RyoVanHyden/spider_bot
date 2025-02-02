@@ -1,8 +1,8 @@
 // TOGGLE MODES
 
-#define MAIN_CODE 0
+#define MAIN_CODE 1
 #define DEBUG 0
-#define TESTS 1
+#define TESTS 0
 
 // --------------------------------------------------------------
 
@@ -123,6 +123,8 @@ Position initLegB(-0.65, 3.75, -5.2);
 Position initLegC(1.85, 3.75, -5.7);
 Position initLegD(1.85, 3.75, -5.7);
 
+Position walk_pos(100,0,0);
+
 // Functions -------------------------------------------------
 
 float rad2deg(float rad){
@@ -220,6 +222,7 @@ void loop() {
       spider.legD.getCurrentJointAngles(t1, t2, t3);
       Serial.print("LEG D: POS = (" + String(spider.legD.getCurrentFootPosition().getX()) + ", " + String(spider.legD.getCurrentFootPosition().getY()) + ", " + String(spider.legD.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");
       Serial.println("Height Index = " + String(spider.getHeigthIndex()));      
+      Serial.println("ROBOT: POS = (" + String(spider.getCurrentLocation().getX()) + ", " + String(spider.getCurrentLocation().getY()) + ", " + String(spider.getCurrentLocation().getZ()) + ") | Desired POS = (" + String(spider.getDesiredLocation().getX()) + ", " + String(spider.getDesiredLocation().getY()) + ", " + String(spider.getDesiredLocation().getZ()) + ")");
 
       //(1/4) UPDATE TIME IN STATES
       uint32_t cur_time = now;   // Just one call to millis()
@@ -312,7 +315,7 @@ void loop() {
         
         break;
       case sm1_walk_straight:
-        spider.walk(true, true, true, true, true);
+        spider.walkTo(true, true, true, true, true, walk_pos);
         break;
       case sm1_lateral_walk:
         spider.lateral_walk(true, true, true, true, N);
