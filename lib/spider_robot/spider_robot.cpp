@@ -171,8 +171,8 @@ void Spider_Robot::setDesiredLocation(Position pos){
     Desired_location = pos;
 }
 
-bool Spider_Robot::isOnDesiredLocation(){
-    return (Current_location.isOnPosition(Desired_location));
+bool Spider_Robot::DesiredLocationReached(){
+    return (Current_location.isOnPosition(Desired_location, robot_step_size, float(0.2), float(0.2)));
 }
 
 void Spider_Robot::stop(){
@@ -199,9 +199,9 @@ void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD
         legC.resetAllTrajectoryComputations();
         legD.resetAllTrajectoryComputations();
         setDesiredLocation(Desired_Location);
-    } else if (walk_fsm.state == sm_compute && next && !isOnDesiredLocation()){
+    } else if (walk_fsm.state == sm_compute && next && !DesiredLocationReached()){
         walk_fsm.new_state = sm_moving;
-    } else if (walk_fsm.state == sm_compute && next && isOnDesiredLocation()){
+    } else if (walk_fsm.state == sm_compute && next && DesiredLocationReached()){
         walk_fsm.new_state = sm_idle;
     } else if (walk_fsm.state == sm_moving && next && legsOnDesiredPositions()){
         walk_fsm.new_state = sm_compute;

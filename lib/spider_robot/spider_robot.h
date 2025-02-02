@@ -98,7 +98,7 @@ public:
     Position getDesiredLocation();
     void setDesiredLocation(Position pos);
 
-    bool isOnDesiredLocation();
+    bool DesiredLocationReached();
 
 };
 

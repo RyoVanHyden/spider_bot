@@ -22,7 +22,7 @@ public:
     void setZ(float z);
 
     bool isOnPosition(Position pos);
-
+    bool isOnPosition(Position pos, float dx, float dy, float dz);
 };
 
 #endif
