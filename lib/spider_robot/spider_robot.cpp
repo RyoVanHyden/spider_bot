@@ -43,7 +43,7 @@ Spider_Robot::Spider_Robot(){
 
     Current_location = Position(0,0,0);
     Desired_location = Position(0,0,0);
-    robot_step_size = 10;
+    robot_step_size = 7.5;
 
     // Walking positions ------------------------------------------------
 
@@ -221,7 +221,7 @@ void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD
         //Parado
         break;
     case sm_compute:
-        if (next){
+        if (true){
             switch (pos_index)
             {
             case 0:
@@ -362,28 +362,28 @@ void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD
         Serial.println("Moving legs on Position " + String(pos_index) + " --------------------------------");
         switch(pos_index){
             case 0:
-                if (enableB && next){legB.moveOnTrajectory(1);}
+                if (enableB ){legB.moveOnTrajectory(1);}
                 break;
             case 1:
-                if (enableA && next){legA.moveOnTrajectory(1);}
-                if (enableB && next){legB.moveOnTrajectory(2);}
-                if (enableC && next){legC.moveOnTrajectory(1);}
-                if (enableD && next){legD.moveOnTrajectory(1);}
+                if (enableA ){legA.moveOnTrajectory(1);}
+                if (enableB ){legB.moveOnTrajectory(2);}
+                if (enableC ){legC.moveOnTrajectory(1);}
+                if (enableD ){legD.moveOnTrajectory(1);}
                 break;
             case 2:
-                if (enableD && next){legD.moveOnTrajectory(2);}
+                if (enableD) {legD.moveOnTrajectory(2);}
                 break;
             case 3:
-                if (enableC && next){legC.moveOnTrajectory(2);}
+                if (enableC ){legC.moveOnTrajectory(2);}
                 break;
             case 4:
-                if (enableA && next){legA.moveOnTrajectory(2);}
-                if (enableB && next){legB.moveOnTrajectory(3);}
-                if (enableC && next){legC.moveOnTrajectory(3);}
-                if (enableD && next){legD.moveOnTrajectory(3);}
+                if (enableA){legA.moveOnTrajectory(2);}
+                if (enableB){legB.moveOnTrajectory(3);}
+                if (enableC){legC.moveOnTrajectory(3);}
+                if (enableD){legD.moveOnTrajectory(3);}
                 break;
             case 5:
-                if (enableA && next){legA.moveOnTrajectory(3);}
+                if (enableA){legA.moveOnTrajectory(3);}
                 break;
             default:
                 break;
@@ -816,6 +816,7 @@ void Spider_Robot::incline(bool enableA, bool enableB, bool enableC, bool enable
 bool Spider_Robot::lift(bool enableA, bool enableB, bool enableC, bool enableD, bool next){
     
     if (hight_index>=9){
+        Serial.println("Already at the highest position");
         return false;
     }
     hight_index++;
@@ -861,10 +862,12 @@ bool Spider_Robot::lift(bool enableA, bool enableB, bool enableC, bool enableD, 
     walk_x_IN = x_AB;
     walk_x_OUT = x_CD;
 
-    BIG_f_step_size = BIG_f_step_size - 0.5;
-    SMALL_f_step_size = SMALL_f_step_size - 0.5;
+    BIG_f_step_size = BIG_f_step_size - 0.75;
+    SMALL_f_step_size = SMALL_f_step_size - 0.75;
 
     updateWalkingPositions();
+
+    return true;
 
 }
 
@@ -917,8 +920,8 @@ bool Spider_Robot::lower(bool enableA, bool enableB, bool enableC, bool enableD,
     walk_x_IN = x_AB;
     walk_x_OUT = x_CD;
 
-    BIG_f_step_size = BIG_f_step_size + 0.5;
-    SMALL_f_step_size = SMALL_f_step_size + 0.5;
+    BIG_f_step_size = BIG_f_step_size + 0.75;
+    SMALL_f_step_size = SMALL_f_step_size + 0.75;
 
     updateWalkingPositions();
 

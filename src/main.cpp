@@ -3,6 +3,7 @@
 #define MAIN_CODE 1
 #define DEBUG 0
 #define TESTS 0
+#define I2C_SCAN 0
 
 // --------------------------------------------------------------
 
@@ -19,25 +20,25 @@
 
 uint32_t now, last_time;
 
-uint32_t interval = 100;
+uint32_t interval = 250;
 
 float temp1;
 
-#define LEG_A_THETA1_OFFSET -0.5
-#define LEG_A_THETA2_OFFSET -4.5
-#define LEG_A_THETA3_OFFSET -10.0
+#define LEG_A_THETA1_OFFSET -7.5
+#define LEG_A_THETA2_OFFSET +4.5
+#define LEG_A_THETA3_OFFSET -2.0
 
-#define LEG_C_THETA1_OFFSET -12.5
-#define LEG_C_THETA2_OFFSET -12.5
-#define LEG_C_THETA3_OFFSET -10.0
+#define LEG_B_THETA1_OFFSET 0.0
+#define LEG_B_THETA2_OFFSET -13.0
+#define LEG_B_THETA3_OFFSET 8.0
 
-#define LEG_B_THETA1_OFFSET -16.0
-#define LEG_B_THETA2_OFFSET -16.5
-#define LEG_B_THETA3_OFFSET -11.5
+#define LEG_C_THETA1_OFFSET 0.0
+#define LEG_C_THETA2_OFFSET -2.5
+#define LEG_C_THETA3_OFFSET -7.0
 
-#define LEG_D_THETA1_OFFSET 4.0
-#define LEG_D_THETA2_OFFSET -0.5
-#define LEG_D_THETA3_OFFSET 0.0
+#define LEG_D_THETA1_OFFSET 6.5
+#define LEG_D_THETA2_OFFSET -8.0
+#define LEG_D_THETA3_OFFSET -3.0
 
 Adafruit_PWMServoDriver pwm_driver = Adafruit_PWMServoDriver();
 Adafruit_VL53L0X lox = Adafruit_VL53L0X();
@@ -68,6 +69,7 @@ bool A, B, C, D, E, G, J, K;
 float tA, tB, tC, tD;
 float aux1, aux2;
 float t1, t2, t3;
+int servo_test_id = 9;
 
 Position test_pos (0.0, 0.0, 0.0);
 
@@ -90,10 +92,17 @@ enum {
   sm1_testD,
   sm1_idle,
   sm1_walk_straight,
+  sm1_walk_over_obstacles,
   sm1_rotate,
   sm1_lateral_walk,
   sm1_lift,
   sm1_lower
+};
+
+enum{
+  sm2_idle = 0,
+  sm2_walk,
+  sm2_lift
 };
 
 int previous_state = 0;
@@ -108,22 +117,23 @@ void set_state(fsm_t& fsm, int new_state)
 }
 
 fsm_t robot_fsm;
+fsm_t walk_over_obstacles_fsm;
 
 // Robot Variables ------------------------------------------
 
 Spider_Robot spider;
 
-LEG legA(9, 10, 11, 3.65, 4.75, 8.2, LEG_A_THETA1_OFFSET, LEG_A_THETA2_OFFSET, LEG_A_THETA3_OFFSET, 'A');
+LEG legA(0, 1, 2, 3.65, 4.75, 8.2, LEG_A_THETA1_OFFSET, LEG_A_THETA2_OFFSET, LEG_A_THETA3_OFFSET, 'A');
 LEG legB(3, 4, 5, 3.65, 5.3, 8.2, LEG_B_THETA1_OFFSET, LEG_B_THETA2_OFFSET, LEG_B_THETA3_OFFSET, 'B');
-LEG legC(0, 1, 2, 3.35, 4.75, 8.2, LEG_C_THETA1_OFFSET, LEG_C_THETA2_OFFSET, LEG_C_THETA3_OFFSET, 'C');
-LEG legD(6, 7, 8, 3.65, 5.3, 8.2, LEG_D_THETA1_OFFSET, LEG_D_THETA2_OFFSET, LEG_D_THETA3_OFFSET, 'D');
+LEG legC(6, 7, 8, 3.35, 4.75, 8.2, LEG_C_THETA1_OFFSET, LEG_C_THETA2_OFFSET, LEG_C_THETA3_OFFSET, 'C');
+LEG legD(9, 10, 11, 3.65, 5.3, 8.2, LEG_D_THETA1_OFFSET, LEG_D_THETA2_OFFSET, LEG_D_THETA3_OFFSET, 'D');
 
 Position initLegA(-0.65, 3.75, -5.7);
 Position initLegB(-0.65, 3.75, -5.2);
 Position initLegC(1.85, 3.75, -5.7);
 Position initLegD(1.85, 3.75, -5.7);
 
-Position walk_pos(100,0,0);
+Position walk_pos(120,0,0);
 
 // Functions -------------------------------------------------
 
@@ -208,26 +218,10 @@ void loop() {
     if ((now-last_time > interval)) {
 
       Serial.print("NEW CYCLE -------------------------------------------------------------|\n");
-
-      //Check Serial Inputs
-      Serial.println("FSM STATE: " + String(robot_fsm.state) + " | INPUTS: W = " + String(W) + ", S = " + String(S) + ", I = " + String(I) + ", T = " + T + ", H = " + H + ", L = " + L + ", N = " + N + ", R = " + R + ", l = " + l + ", u = " + u + ", d = " + d);
-      
-      
-      spider.legA.getCurrentJointAngles(t1, t2, t3);
-      Serial.print("LEG A: POS = (" + String(spider.legA.getCurrentFootPosition().getX()) + ", " + String(spider.legA.getCurrentFootPosition().getY()) + ", " + String(spider.legA.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");
-      spider.legB.getCurrentJointAngles(t1, t2, t3);
-      Serial.print("LEG B: POS = (" + String(spider.legB.getCurrentFootPosition().getX()) + ", " + String(spider.legB.getCurrentFootPosition().getY()) + ", " + String(spider.legB.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");
-      spider.legC.getCurrentJointAngles(t1, t2, t3);
-      Serial.print("LEG C: POS = (" + String(spider.legC.getCurrentFootPosition().getX()) + ", " + String(spider.legC.getCurrentFootPosition().getY()) + ", " + String(spider.legC.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");
-      spider.legD.getCurrentJointAngles(t1, t2, t3);
-      Serial.print("LEG D: POS = (" + String(spider.legD.getCurrentFootPosition().getX()) + ", " + String(spider.legD.getCurrentFootPosition().getY()) + ", " + String(spider.legD.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");
-      Serial.println("Height Index = " + String(spider.getHeigthIndex()));      
-      Serial.println("ROBOT: POS = (" + String(spider.getCurrentLocation().getX()) + ", " + String(spider.getCurrentLocation().getY()) + ", " + String(spider.getCurrentLocation().getZ()) + ") | Desired POS = (" + String(spider.getDesiredLocation().getX()) + ", " + String(spider.getDesiredLocation().getY()) + ", " + String(spider.getDesiredLocation().getZ()) + ")");
-
+     
       //(1/4) UPDATE TIME IN STATES
       uint32_t cur_time = now;   // Just one call to millis()
       robot_fsm.tis = cur_time - robot_fsm.tes;
-
 
       //(2/4) FIRE TRANSITIONS
       if (robot_fsm.state == sm1_start && I){
@@ -287,6 +281,18 @@ void loop() {
       //(3/4) - UPDATE STATES
       set_state(robot_fsm, robot_fsm.new_state);
 
+      Serial.println("FSM STATE: " + String(robot_fsm.state) + " | INPUTS: W = " + String(W) + ", S = " + String(S) + ", I = " + String(I) + ", T = " + T + ", H = " + H + ", L = " + L + ", N = " + N + ", R = " + R + ", l = " + l + ", u = " + u + ", d = " + d);
+      spider.legA.getCurrentJointAngles(t1, t2, t3);
+      Serial.print("LEG A: POS = (" + String(spider.legA.getCurrentFootPosition().getX()) + ", " + String(spider.legA.getCurrentFootPosition().getY()) + ", " + String(spider.legA.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");
+      spider.legB.getCurrentJointAngles(t1, t2, t3);
+      Serial.print("LEG B: POS = (" + String(spider.legB.getCurrentFootPosition().getX()) + ", " + String(spider.legB.getCurrentFootPosition().getY()) + ", " + String(spider.legB.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");
+      spider.legC.getCurrentJointAngles(t1, t2, t3);
+      Serial.print("LEG C: POS = (" + String(spider.legC.getCurrentFootPosition().getX()) + ", " + String(spider.legC.getCurrentFootPosition().getY()) + ", " + String(spider.legC.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");
+      spider.legD.getCurrentJointAngles(t1, t2, t3);
+      Serial.print("LEG D: POS = (" + String(spider.legD.getCurrentFootPosition().getX()) + ", " + String(spider.legD.getCurrentFootPosition().getY()) + ", " + String(spider.legD.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");  
+      Serial.println("ROBOT: POS = (" + String(spider.getCurrentLocation().getX()) + ", " + String(spider.getCurrentLocation().getY()) + ", " + String(spider.getCurrentLocation().getZ()) + ") | Desired POS = (" + String(spider.getDesiredLocation().getX()) + ", " + String(spider.getDesiredLocation().getY()) + ", " + String(spider.getDesiredLocation().getZ()) + ")");
+      Serial.println("Height Index = " + String(spider.getHeigthIndex()));    
+
       //(4/4) - ACTIONS
       switch (robot_fsm.state) {
       case sm1_start:
@@ -315,7 +321,7 @@ void loop() {
         
         break;
       case sm1_walk_straight:
-        spider.walkTo(true, true, true, true, true, walk_pos);
+        spider.walkTo(true, true, true, true, N, walk_pos);
         break;
       case sm1_lateral_walk:
         spider.lateral_walk(true, true, true, true, N);
@@ -335,23 +341,15 @@ void loop() {
         yp = 0.0;
         zp = 0.0;
 
-        pulse_Length1 = map(119.98 + LEG_A_THETA1_OFFSET, 0.0, 180.0, 150.0, 580.0);
-        pulse_Length2 = map(121.68 + LEG_A_THETA2_OFFSET, 0.0, 180.0, 150.0, 580.0);
-        pulse_Length3 = map(123.71 + LEG_A_THETA3_OFFSET, 0.0, 180.0, 150.0, 580.0);
-        //pulse_length4 = map(tB + LEG_B_THETA3_OFFSET, 0.0, 180.0, 150.0, 580.0);
+        if (H) {delta_theta+=0.5;}
+        if (L) {delta_theta-=0.5;}
+        if (N) {servo_test_id++;delta_theta=0;}
 
-        //pulse_Length2 = map(90, 0.0, 180.0, 150.0, 580.0);
+        pulse_Length1 = map(90 + delta_theta, 0.0, 180.0, 150.0, 580.0);
+     
+        pwm_driver.setPWM(servo_test_id, 0, pulse_Length1);
 
-        //Serial.print("Theta 3 - LEG A = " + String(tA) + " | Theta 3 - LEG B = " + String(tB) + " | Theta 3 - LEG C = " + String(tC)  + " | Theta 3 - LEG D = " + String(tD) + "\n");
-
-        pwm_driver.setPWM(9, 0, pulse_Length1);
-        pwm_driver.setPWM(10, 0, pulse_Length2);
-        pwm_driver.setPWM(11, 0, pulse_Length3); 
-        //pwm_driver.setPWM(5, 0, pulse_length4);
-
-        //Serial.println("THETA 1 LEG D = 100.49 + " + String(delta_theta) + " = " + String(100.49 + delta_theta) + "\n");
-
-        //pwm_driver.setPWM(9, 0, pulse_Length2);
+        Serial.println("Servo ID offset " + String(servo_test_id) + " = " + String(delta_theta) + "º ");
     
         break;
       case sm1_testA:
@@ -518,5 +516,35 @@ void loop() {
     delay(100);
 }
 
+
+#endif
+
+#if I2C_SCAN
+
+#include <Wire.h>
+#include <stdio.h>
+#include <Arduino.h>
+
+void scan_i2c_bus() {
+    Serial.println("Scanning I2C bus...");
+    for (uint8_t addr = 1; addr < 127; addr++) {
+        Wire.beginTransmission(addr);
+        if (Wire.endTransmission() == 0) {
+            Serial.println("Device found at address 0x" + String(addr, HEX));
+        }
+    }
+    Serial.println("Scan complete.\n");
+}
+
+void setup() {
+    Serial.begin(115200);
+    Wire.begin();
+    delay(2000); // Allow time for serial connection
+}
+
+void loop() {
+    scan_i2c_bus();
+    delay(5000);
+}
 
 #endif
