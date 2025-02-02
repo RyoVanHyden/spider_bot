@@ -1,7 +1,7 @@
 // TOGGLE MODES
 
-#define DEBUG 0
 #define MAIN_CODE 0
+#define DEBUG 0
 #define TESTS 1
 
 // --------------------------------------------------------------
@@ -459,7 +459,7 @@ void loop() {
 #include <Arduino.h>
 void setup() {
     pinMode(25, OUTPUT); // Set GPIO 25 as an output
-    Serial.begin(115200);
+    Serial.begin(9600);
     
 }
 
@@ -477,71 +477,43 @@ void loop() {
 
 #if TESTS
 
+#include <Arduino.h>
 #include <Wire.h>
+#include <SPI.h>
+#include <VL53L0X.h>
 
-TwoWire rgbWire(20, 21);
-TwoWire tofWire(14, 15);
-TwoWire driverWire(18, 19);
+// Define I2C bus for Raspberry Pi Pico
+
+VL53L0X sensor;
 
 void setup() {
-  Serial.begin(115200);
-  driverWire.begin();
-  tofWire.begin();
-  rgbWire.begin();
-
-  Serial.println("I2C Continuous Scanner");
+    Serial.begin(115200);
+    delay(1000);
+    
+    // Initialize I2C
+    Wire.begin();
+    
+    // Initialize VL53L0X sensor
+    if (!sensor.init(&Wire)) {
+        Serial.println("Failed to initialize VL53L0X sensor!");
+        while (1);
+    }
+    sensor.setTimeout(500);
+    sensor.startContinuous();
+    Serial.println("VL53L0X initialized successfully!");
 }
 
 void loop() {
-  // Start scanning for I2C devices
-  Serial.println("Scanning driverWire I2C devices...");
-
-  // Scan for devices on the I2C bus
-  for (byte i = 8; i < 120; i++) {
-    driverWire.beginTransmission(i);
-    byte error = driverWire.endTransmission();
-
-    if (error == 0) {
-      Serial.print("I2C device found at address 0x");
-      if (i < 16) {
-        Serial.print("0");
-      }
-      Serial.println(i, HEX);
+    uint16_t distance = sensor.readRangeContinuousMillimeters();
+    if (sensor.timeoutOccurred()) {
+        Serial.println("Sensor timeout!");
+    } else {
+        Serial.print("Distance: ");
+        Serial.print(distance);
+        Serial.println(" mm");
     }
-  }
-
-  // Start scanning for I2C devices
-  Serial.println("Scanning tofWire I2C devices...");
-
-  // Scan for devices on the I2C bus
-  for (byte i = 8; i < 120; i++) {
-    tofWire.beginTransmission(i);
-    byte error = tofWire.endTransmission();
-
-    if (error == 0) {
-      Serial.print("I2C device found at address 0x");
-      if (i < 16) {
-        Serial.print("0");
-      }
-      Serial.println(i, HEX);
-    }
-  }
-
-    // Start scanning for I2C devices
-  Serial.println("Scanning rgbWire I2C devices...");
-  // Scan for devices on the I2C bus
-  for (byte i = 8; i < 120; i++) {
-    rgbWire.beginTransmission(i);
-    byte error = rgbWire.endTransmission();
-
-    if (error == 0) {
-      Serial.print("I2C device found at address 0x");
-      if (i < 16) {
-        Serial.print("0");
-      }
-      Serial.println(i, HEX);
-    }
-  }
+    delay(100);
 }
+
 
 #endif
