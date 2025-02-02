@@ -41,7 +41,10 @@ private:
     float BIG_f_step_size, SMALL_f_step_size, lat_step_size;
     float rot_angle;
 
+    float robot_step_size;
+
     void updateWalkingPositions();
+    void stepForward();
 
     typedef struct {
         int state, new_state;

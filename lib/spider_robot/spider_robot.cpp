@@ -39,6 +39,12 @@ Spider_Robot::Spider_Robot(){
 
     hight_index = 0;
 
+    // Robot's own Location ---------------------------------------------
+    
+    Current_location = Position(0,0,0);
+    Desired_location = Position(0,0,0);
+    robot_step_size = 10;
+
     // Walking positions ------------------------------------------------
 
     walk_z = -5.7;
@@ -386,6 +392,11 @@ void Spider_Robot::walk(bool enableA, bool enableB, bool enableC, bool enableD, 
         break;
     }
 
+}
+
+void Spider_Robot::stepForward(){
+    float x = Current_location.getX();
+    Current_location.setX(x + robot_step_size);
 }
 
 int Spider_Robot::getPosIndex(){
