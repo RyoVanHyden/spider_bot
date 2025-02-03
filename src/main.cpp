@@ -20,21 +20,21 @@
 
 uint32_t now, last_time;
 
-uint32_t interval = 250;
+uint32_t interval = 500;
 
 float temp1;
 
 #define LEG_A_THETA1_OFFSET -7.5
-#define LEG_A_THETA2_OFFSET +4.5
+#define LEG_A_THETA2_OFFSET 4.5
 #define LEG_A_THETA3_OFFSET -2.0
 
 #define LEG_B_THETA1_OFFSET 0.0
 #define LEG_B_THETA2_OFFSET -13.0
 #define LEG_B_THETA3_OFFSET 8.0
 
-#define LEG_C_THETA1_OFFSET 0.0
-#define LEG_C_THETA2_OFFSET -2.5
-#define LEG_C_THETA3_OFFSET -7.0
+#define LEG_C_THETA1_OFFSET -4.5
+#define LEG_C_THETA2_OFFSET -.5
+#define LEG_C_THETA3_OFFSET -4.5
 
 #define LEG_D_THETA1_OFFSET 6.5
 #define LEG_D_THETA2_OFFSET -8.0
@@ -69,7 +69,7 @@ bool A, B, C, D, E, G, J, K;
 float tA, tB, tC, tD;
 float aux1, aux2;
 float t1, t2, t3;
-int servo_test_id = 9;
+int servo_test_id = 6;
 
 Position test_pos (0.0, 0.0, 0.0);
 
@@ -128,10 +128,10 @@ LEG legB(3, 4, 5, 3.65, 5.3, 8.2, LEG_B_THETA1_OFFSET, LEG_B_THETA2_OFFSET, LEG_
 LEG legC(6, 7, 8, 3.35, 4.75, 8.2, LEG_C_THETA1_OFFSET, LEG_C_THETA2_OFFSET, LEG_C_THETA3_OFFSET, 'C');
 LEG legD(9, 10, 11, 3.65, 5.3, 8.2, LEG_D_THETA1_OFFSET, LEG_D_THETA2_OFFSET, LEG_D_THETA3_OFFSET, 'D');
 
-Position initLegA(-0.65, 3.75, -5.7);
-Position initLegB(-0.65, 3.75, -5.2);
-Position initLegC(1.85, 3.75, -5.7);
-Position initLegD(1.85, 3.75, -5.7);
+Position initLegA(-1.5, 7.5, -5.7);
+Position initLegB(-1.5, 7.5, -5.2);
+Position initLegC(3.5, 7.5, -5.7);
+Position initLegD(3.5, 7.5, -5.7);
 
 Position walk_pos(120,0,0);
 
