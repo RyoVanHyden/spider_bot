@@ -68,7 +68,7 @@ Spider_Robot::Spider_Robot(){
 
     W_posD[0] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);   
     W_posD[1] = Position(walk_x_IN, walk_y, walk_z);       
-    W_posD[2] = Position(walk_x_OUT, walk_y, walk_z);       
+    W_posD[2] = Position(walk_x_OUT, walk_y, walk_z);      
 
     // Lateral Walking positions ----------------------------------------
 
@@ -942,21 +942,21 @@ int Spider_Robot::getHeigthIndex(){
 
 void Spider_Robot::updateWalkingPositions(){
 
-    W_posA[0] = Position(walk_x_OUT, walk_y, walk_z);         
-    W_posA[1] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);        
-    W_posA[2] = Position(walk_x_IN, walk_y, walk_z);       
+    W_posB[0] = Position(walk_x_OUT, walk_y, walk_z);         
+    W_posB[1] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);        
+    W_posB[2] = Position(walk_x_IN, walk_y, walk_z);       
 
-    W_posB[0] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z + 0.35);           
-    W_posB[1] = Position(walk_x_OUT, walk_y, walk_z + 0.35);        
-    W_posB[2] = Position(walk_x_IN, walk_y, walk_z + 0.35);        
+    W_posA[0] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z + 0.35);           
+    W_posA[1] = Position(walk_x_OUT, walk_y, walk_z + 0.35);        
+    W_posA[2] = Position(walk_x_IN, walk_y, walk_z + 0.35);        
 
-    W_posC[0] = Position(walk_x_IN, walk_y, walk_z);        
-    W_posC[1] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z);      
-    W_posC[2] = Position(walk_x_OUT, walk_y, walk_z);        
+    W_posD[0] = Position(walk_x_IN, walk_y, walk_z);        
+    W_posD[1] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z);      
+    W_posD[2] = Position(walk_x_OUT, walk_y, walk_z);        
 
-    W_posD[0] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);   
-    W_posD[1] = Position(walk_x_IN, walk_y, walk_z);       
-    W_posD[2] = Position(walk_x_OUT, walk_y, walk_z);       
+    W_posC[0] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);   
+    W_posC[1] = Position(walk_x_IN, walk_y, walk_z);       
+    W_posC[2] = Position(walk_x_OUT, walk_y, walk_z);       
 
     // Lateral Walking positions ----------------------------------------
 
@@ -996,5 +996,12 @@ void Spider_Robot::updateWalkingPositions(){
     R_posD[0] = Position(0, walk_y, walk_z);
     R_posD[1] = Position(x_rot, y_rot, walk_z);
     R_posD[2] = Position(0, walk_y, walk_z);
+
+    // Trajectory Reset -----------------------------------------------
+
+    legA.resetAllTrajectoryComputations();
+    legB.resetAllTrajectoryComputations();
+    legC.resetAllTrajectoryComputations();
+    legD.resetAllTrajectoryComputations();
 
 }

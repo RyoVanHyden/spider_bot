@@ -19,8 +19,9 @@
 #include "position.h"
 
 uint32_t now, last_time;
+uint32_t last_lift;
 
-uint32_t interval = 500;
+uint32_t interval = 200;
 
 float temp1;
 
@@ -75,7 +76,7 @@ Position test_pos (0.0, 0.0, 0.0);
 
 //FSM VARIABLES --------------------------------------------
 
-bool S, W, I, T, l, R, u, d;
+bool S, W, I, T, l, R, u, d, O, M;
 
 typedef struct {
   int state, new_state;
@@ -128,12 +129,37 @@ LEG legB(3, 4, 5, 3.65, 5.3, 8.2, LEG_B_THETA1_OFFSET, LEG_B_THETA2_OFFSET, LEG_
 LEG legC(6, 7, 8, 3.35, 4.75, 8.2, LEG_C_THETA1_OFFSET, LEG_C_THETA2_OFFSET, LEG_C_THETA3_OFFSET, 'C');
 LEG legD(9, 10, 11, 3.65, 5.3, 8.2, LEG_D_THETA1_OFFSET, LEG_D_THETA2_OFFSET, LEG_D_THETA3_OFFSET, 'D');
 
-Position initLegA(-1.5, 7.5, -5.7);
-Position initLegB(-1.5, 7.5, -5.2);
-Position initLegC(3.5, 7.5, -5.7);
-Position initLegD(3.5, 7.5, -5.7);
+Position initLegA(-0.65, 3.75, -5.7);
+Position initLegB(-0.65, 3.75, -5.2);
+Position initLegC(1.85, 3.75, -5.7);
+Position initLegD(1.85, 3.75, -5.7);
 
 Position walk_pos(120,0,0);
+
+// FIR ------------------------------------------------------
+
+typedef struct {
+  float entries[5];
+  float output;
+} FIR;
+
+void computeFIROutput(FIR& fir){
+  float sum = 0;
+  for (int i = 0; i < 5; i++){
+    sum += fir.entries[i];
+  }
+  fir.output = sum/5;
+}
+
+void addEntry(FIR& fir, float new_entry){
+  for (int i = 4; i > 0; i--){
+    fir.entries[i] = fir.entries[i-1];
+  }
+  fir.entries[0] = new_entry;
+  computeFIROutput(fir);
+}
+
+FIR TOF_measurements;
 
 // Functions -------------------------------------------------
 
@@ -168,6 +194,11 @@ void setup() {
 
     Serial.println("SET UP...");
 
+    for (int i = 0; i < 5; i++){
+      TOF_measurements.entries[i] = 0.0;
+    }
+    computeFIROutput(TOF_measurements);
+
   }
 
 void loop() {
@@ -175,17 +206,6 @@ void loop() {
     uint8_t b;
 
     VL53L0X_RangingMeasurementData_t measure;
-
-    lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
-
-    /*
-    if (measure.RangeStatus != 4) {  // phase failures have incorrect data
-      distance = float(measure.RangeMilliMeter);
-      Serial.println("Distance (mm): " + String(distance)); 
-    } else {
-      Serial.println("Sensor out of range ");
-    }
-    */
     
     //Check serial comm
     if (Serial.available()) {  
@@ -209,6 +229,7 @@ void loop() {
       else if (b == 'R') R = true;
       else if (b == 'u') u = true;
       else if (b == 'd') d = true;
+      else if (b == 'O') O = true;
     } 
 
     now = millis();
@@ -219,6 +240,19 @@ void loop() {
 
       Serial.print("NEW CYCLE -------------------------------------------------------------|\n");
      
+    lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+
+    if (measure.RangeStatus != 4) {  // phase failures have incorrect data
+      distance = float(measure.RangeMilliMeter) - 25.0;
+      Serial.print("Distance (mm): " + String(distance)); 
+      addEntry(TOF_measurements, distance);
+      M = (TOF_measurements.output <= 150.0);
+      Serial.println("| M = " + String(M));
+    } else {
+      Serial.println("TOF sensor out of range ");
+      M = false;
+    }
+
       //(1/4) UPDATE TIME IN STATES
       uint32_t cur_time = now;   // Just one call to millis()
       robot_fsm.tis = cur_time - robot_fsm.tes;
@@ -247,6 +281,10 @@ void loop() {
         robot_fsm.new_state = sm1_lift;
       } else if (robot_fsm.state == sm1_idle && d){
         robot_fsm.new_state = sm1_lower;
+      } else if (robot_fsm.state == sm1_idle && O){
+        robot_fsm.new_state = sm1_walk_over_obstacles;
+        walk_over_obstacles_fsm.new_state = sm2_idle;
+        spider.START_WALKING = true;
       } else if (robot_fsm.state == sm1_lift){
         robot_fsm.new_state = sm1_idle;
       } else if (robot_fsm.state == sm1_lower){
@@ -260,6 +298,12 @@ void loop() {
       } else if (robot_fsm.state == sm1_rotate && S){
         robot_fsm.new_state = sm1_idle;
         spider.START_ROTATING = false;
+      } else if (robot_fsm.state == sm1_walk_over_obstacles && S){
+        robot_fsm.new_state = sm1_idle;
+        walk_over_obstacles_fsm.new_state = sm2_idle;
+        spider.START_WALKING = false;
+      } else if (robot_fsm.state == sm1_walk_over_obstacles && spider.DesiredLocationReached() && walk_over_obstacles_fsm.state == sm2_idle){
+        robot_fsm.new_state = sm1_idle;
       } else if (robot_fsm.state == sm1_test_pos && A){
         robot_fsm.new_state = sm1_testA;
       } else if (robot_fsm.state == sm1_test_pos && B){
@@ -281,7 +325,8 @@ void loop() {
       //(3/4) - UPDATE STATES
       set_state(robot_fsm, robot_fsm.new_state);
 
-      Serial.println("FSM STATE: " + String(robot_fsm.state) + " | INPUTS: W = " + String(W) + ", S = " + String(S) + ", I = " + String(I) + ", T = " + T + ", H = " + H + ", L = " + L + ", N = " + N + ", R = " + R + ", l = " + l + ", u = " + u + ", d = " + d);
+      Serial.println("'ROBOT' FSM STATE: " + String(robot_fsm.state) + " | INPUTS: W = " + String(W) + ", S = " + String(S) + ", I = " + String(I) + ", T = " + T + ", H = " + H + ", L = " + L + ", N = " + N + ", R = " + R + ", l = " + l + ", u = " + u + ", d = " + d);
+      Serial.println("'WALK OVER OBSTACLES' FSM STATE: " + String(walk_over_obstacles_fsm.state));
       spider.legA.getCurrentJointAngles(t1, t2, t3);
       Serial.print("LEG A: POS = (" + String(spider.legA.getCurrentFootPosition().getX()) + ", " + String(spider.legA.getCurrentFootPosition().getY()) + ", " + String(spider.legA.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");
       spider.legB.getCurrentJointAngles(t1, t2, t3);
@@ -321,7 +366,7 @@ void loop() {
         
         break;
       case sm1_walk_straight:
-        spider.walkTo(true, true, true, true, N, walk_pos);
+        spider.walkTo(true, true, true, true, true, walk_pos);
         break;
       case sm1_lateral_walk:
         spider.lateral_walk(true, true, true, true, N);
@@ -334,6 +379,40 @@ void loop() {
         break;
       case sm1_lower:
         spider.lower(true, true, true, true, true);
+        break;
+      case sm1_walk_over_obstacles:
+        if (walk_over_obstacles_fsm.state == sm2_idle){
+          walk_over_obstacles_fsm.new_state = sm2_walk;
+        } else if (walk_over_obstacles_fsm.state == sm2_walk && M){
+          walk_over_obstacles_fsm.new_state = sm2_lift;
+          spider.stop();
+        } else if (walk_over_obstacles_fsm.state == sm2_walk && spider.DesiredLocationReached()){
+          walk_over_obstacles_fsm.new_state == sm2_idle;
+        } else if (walk_over_obstacles_fsm.state == sm2_lift && !M){
+          walk_over_obstacles_fsm.new_state = sm2_walk;
+          spider.lift(true, true, true, true, true);
+        }
+
+        set_state(walk_over_obstacles_fsm, walk_over_obstacles_fsm.new_state);
+
+        switch(walk_over_obstacles_fsm.state){
+          case sm2_idle:
+            walk_pos.setX(walk_pos.getX() + 10.0);
+            break;
+          case sm2_walk:
+            spider.walkTo(true, true, true, true, true, walk_pos);
+            break;
+          case sm2_lift:
+            if (last_lift - millis() > 500){
+              spider.lift(true, true, true, true, true);
+              last_lift = now;
+            } else {
+              Serial.println("Waiting until next lift");
+            }
+            
+            break;
+        }
+
         break;
       case sm1_test_pos:
 
@@ -443,7 +522,7 @@ void loop() {
 
      Serial.println("End of Cycle ----------------------------------------------------------|");
 
-      I = W = S = T = L = H = N = A = B = C = D = E = G = J = K = l = R = u = d = false;
+      I = W = S = T = L = H = N = A = B = C = D = E = G = J = K = l = R = u = d = O = M = false;
       
       last_time = now;
       
