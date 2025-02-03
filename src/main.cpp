@@ -14,6 +14,7 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <math.h>
 #include <Adafruit_VL53L0X.h>
+#include <MPU6050.h>
 #include "leg.h"
 #include "spider_robot.h"
 #include "position.h"
@@ -21,7 +22,7 @@
 uint32_t now, last_time;
 uint32_t last_lift;
 
-uint32_t interval = 200;
+uint32_t interval = 500;
 
 float temp1;
 
@@ -43,7 +44,17 @@ float temp1;
 
 Adafruit_PWMServoDriver pwm_driver = Adafruit_PWMServoDriver();
 Adafruit_VL53L0X lox = Adafruit_VL53L0X();
+
+MPU6050 mpu;
+#define PITCH_OFFSET 4.30
+#define ROLL_OFFSET 172.10
+
 float distance = 0.0;
+
+const int MPU = 0x68; //I2C address of the MPU-6050
+
+int16_t ax, ay, az, gx, gy, gz;
+float accelX, accelY, accelZ, roll, pitch;
 
 //RESTING POSITION: 80, 140, 140
 
@@ -156,10 +167,12 @@ void addEntry(FIR& fir, float new_entry){
     fir.entries[i] = fir.entries[i-1];
   }
   fir.entries[0] = new_entry;
+  for(int j = 0; j<5;j++){
+  }
   computeFIROutput(fir);
 }
 
-FIR TOF_measurements;
+FIR TOF_FIR, IMU_PITCH_FIR, IMU_ROLL_FIR;
 
 // Functions -------------------------------------------------
 
@@ -171,6 +184,24 @@ float deg2rad(float deg){
     return deg*PI/180.0;
 }
 
+void readIMU(){
+    mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+    // Convert raw accelerometer data to g-force
+    accelX = ax / 16384.0;  // MPU6050 full-scale range ±2g
+    accelY = ay / 16384.0;
+    accelZ = az / 16384.0;
+
+    // Calculate roll and pitch angles (in degrees)
+    roll  = ROLL_OFFSET + atan2(accelY, accelZ) * 180.0 / PI;
+    pitch = PITCH_OFFSET + atan2(-accelX, sqrt(accelY * accelY + accelZ * accelZ)) * 180.0 / PI;
+
+    if (roll > 180.0){roll = roll - 360.0;}
+
+    addEntry(IMU_PITCH_FIR, pitch);
+    addEntry(IMU_ROLL_FIR, roll);
+}
+
 void setup() {
     Wire.begin();
     pwm_driver.begin();
@@ -178,6 +209,15 @@ void setup() {
     lox.begin();
 
     Serial.begin(9600);
+
+    mpu.initialize(); // Initialize MPU6050
+
+    // Check if the MPU6050 is connected
+    while(!mpu.testConnection()) {
+        Serial.println("MPU6050 connection failed!");
+        delay(50);
+    }
+    Serial.println("MPU6050 connected.");
 
     pinMode(25, OUTPUT); //Debugging LED
 
@@ -195,9 +235,13 @@ void setup() {
     Serial.println("SET UP...");
 
     for (int i = 0; i < 5; i++){
-      TOF_measurements.entries[i] = 0.0;
+      TOF_FIR.entries[i] = 0.0;
+      IMU_PITCH_FIR.entries[i] = 0.0;
+      IMU_ROLL_FIR.entries[i] = 0.0;
     }
-    computeFIROutput(TOF_measurements);
+    computeFIROutput(TOF_FIR);
+    computeFIROutput(IMU_PITCH_FIR);
+    computeFIROutput(IMU_ROLL_FIR);
 
   }
 
@@ -240,18 +284,25 @@ void loop() {
 
       Serial.print("NEW CYCLE -------------------------------------------------------------|\n");
      
-    lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+      lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
 
-    if (measure.RangeStatus != 4) {  // phase failures have incorrect data
-      distance = float(measure.RangeMilliMeter) - 25.0;
-      Serial.print("Distance (mm): " + String(distance)); 
-      addEntry(TOF_measurements, distance);
-      M = (TOF_measurements.output <= 150.0);
-      Serial.println("| M = " + String(M));
-    } else {
-      Serial.println("TOF sensor out of range ");
-      M = false;
-    }
+      if (measure.RangeStatus != 4) {  // phase failures have incorrect data
+        distance = float(measure.RangeMilliMeter) - 25.0;
+        Serial.print("Distance (mm): " + String(distance)); 
+        addEntry(TOF_FIR, distance);
+        M = (TOF_FIR.output <= 150.0);
+        Serial.println("| M = " + String(TOF_FIR.output));
+      } else {
+        Serial.println("TOF sensor out of range ");
+        M = false;
+      }
+
+      //Read accelerometer and gyroscope values
+      readIMU();
+
+      // Print values
+      Serial.print("Pitch: "); Serial.print(IMU_PITCH_FIR.output);
+      Serial.print(" | Roll: "); Serial.println(IMU_ROLL_FIR.output);
 
       //(1/4) UPDATE TIME IN STATES
       uint32_t cur_time = now;   // Just one call to millis()
@@ -426,16 +477,13 @@ void loop() {
         yp = 0.0;
         zp = 0.0;
 
-        if (H) {delta_theta+=0.5;}
-        if (L) {delta_theta-=0.5;}
+        if (H) {delta_theta+=0.1;}
+        if (L) {delta_theta-=0.1;}
         if (N) {servo_test_id++;delta_theta=0;}
 
-        pulse_Length1 = map(90 + delta_theta, 0.0, 180.0, 150.0, 580.0);
-     
-        pwm_driver.setPWM(servo_test_id, 0, pulse_Length1);
 
-        Serial.println("Servo ID offset " + String(servo_test_id) + " = " + String(delta_theta) + "º ");
-    
+        //addEntry(IMU_ROLL_FIR, roll);
+
         break;
       case sm1_testA:
         cx = spider.legA.getCurrentFootPosition().getX();

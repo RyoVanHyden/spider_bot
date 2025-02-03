@@ -41,6 +41,8 @@ private:
     float BIG_f_step_size, SMALL_f_step_size, lat_step_size;
     float rot_angle;
 
+    float delta_z;
+
     float robot_step_size;
 
     void updateWalkingPositions();
@@ -87,6 +89,8 @@ public:
     bool higherPositionAvailable();
     bool lowerPositionAvailable();
     int getHeigthIndex();
+
+    void stabilise(float roll, float pitch);
 
     void stop();
     bool legsOnDesiredPositions();

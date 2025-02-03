@@ -15,7 +15,8 @@ Spider_Robot::Spider_Robot(){
 
     // These positions are CARTESIAN oriented, and refer to the Y and Z coordinates of the foot. The X should be obtained trough Trigonometry
     // for the OUTTER position, the angle is 28.27º, for the INNER position its -9.93º
-    
+
+
     higher_pos[0][0] = 3.75;
     higher_pos[0][1] = -5.7;
     higher_pos[1][0] = 4.10;
@@ -115,6 +116,9 @@ Spider_Robot::Spider_Robot(){
     R_posD[2] = Position(0, walk_y, walk_z);
 
     pos_index = 0;
+
+    //
+    delta_z = 0;
 
 }
 // LEG(int servo_id1, int servo_id2, int servo_id3, float Length1, float length2, float length3, float to1, float to2, float to3);
@@ -1004,5 +1008,12 @@ void Spider_Robot::updateWalkingPositions(){
     legB.resetAllTrajectoryComputations();
     legC.resetAllTrajectoryComputations();
     legD.resetAllTrajectoryComputations();
+
+}
+
+void Spider_Robot::stabilise(float roll, float pitch){
+
+    
+
 
 }
