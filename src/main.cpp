@@ -87,7 +87,7 @@ Position test_pos (0.0, 0.0, 0.0);
 
 //FSM VARIABLES --------------------------------------------
 
-bool S, W, I, T, l, R, u, d, O, M;
+bool S, W, I, T, l, R, u, d, O, M, X;
 
 typedef struct {
   int state, new_state;
@@ -108,7 +108,8 @@ enum {
   sm1_rotate,
   sm1_lateral_walk,
   sm1_lift,
-  sm1_lower
+  sm1_lower,
+  sm1_stabilize
 };
 
 enum{
@@ -274,6 +275,7 @@ void loop() {
       else if (b == 'u') u = true;
       else if (b == 'd') d = true;
       else if (b == 'O') O = true;
+      else if (b == 'X') X = true;
     } 
 
     now = millis();
@@ -308,6 +310,7 @@ void loop() {
       uint32_t cur_time = now;   // Just one call to millis()
       robot_fsm.tis = cur_time - robot_fsm.tes;
 
+      if (true){
       //(2/4) FIRE TRANSITIONS
       if (robot_fsm.state == sm1_start && I){
         robot_fsm.new_state = sm1_init;
@@ -336,6 +339,12 @@ void loop() {
         robot_fsm.new_state = sm1_walk_over_obstacles;
         walk_over_obstacles_fsm.new_state = sm2_idle;
         spider.START_WALKING = true;
+      } else if (robot_fsm.state == sm1_idle && X){
+        robot_fsm.new_state = sm1_stabilize;
+        spider.legA.moveTo(Position(0, 3.75, -5.7));
+        spider.legB.moveTo(Position(0, 3.75, -5.7));
+        spider.legC.moveTo(Position(0, 3.75, -5.7));
+        spider.legD.moveTo(Position(0, 3.75, -5.7));
       } else if (robot_fsm.state == sm1_lift){
         robot_fsm.new_state = sm1_idle;
       } else if (robot_fsm.state == sm1_lower){
@@ -355,6 +364,8 @@ void loop() {
         spider.START_WALKING = false;
       } else if (robot_fsm.state == sm1_walk_over_obstacles && spider.DesiredLocationReached() && walk_over_obstacles_fsm.state == sm2_idle){
         robot_fsm.new_state = sm1_idle;
+      } else if (robot_fsm.state == sm1_stabilize && S){
+        robot_fsm.new_state = sm1_idle;
       } else if (robot_fsm.state == sm1_test_pos && A){
         robot_fsm.new_state = sm1_testA;
       } else if (robot_fsm.state == sm1_test_pos && B){
@@ -372,7 +383,7 @@ void loop() {
       } else if (robot_fsm.state == sm1_testD && T){
         robot_fsm.new_state = sm1_test_pos;
       }
-
+      }
       //(3/4) - UPDATE STATES
       set_state(robot_fsm, robot_fsm.new_state);
 
@@ -469,6 +480,10 @@ void loop() {
             
             break;
         }
+
+        break;
+      case sm1_stabilize:
+        spider.stabilise(IMU_PITCH_FIR.output, IMU_ROLL_FIR.output);
 
         break;
       case sm1_test_pos:
@@ -576,7 +591,7 @@ void loop() {
 
      Serial.println("End of Cycle ----------------------------------------------------------|");
 
-      I = W = S = T = L = H = N = A = B = C = D = E = G = J = K = l = R = u = d = O = M = false;
+      I = W = S = T = L = H = N = A = B = C = D = E = G = J = K = l = R = u = d = O = M = X = false;
       
       last_time = now;
       

@@ -1012,8 +1012,17 @@ void Spider_Robot::updateWalkingPositions(){
 }
 
 void Spider_Robot::stabilise(float roll, float pitch){
+    float Ly = 7.5;
+    float Lx = 10.5;
+    float L1 = 3.35;
+    float L2 = 4.7;
 
-    
+
+    roll = roll *(PI/180.0);
+    pitch = pitch *(PI/180.0);
+
+    float delta_z_roll = tan(roll) * (Ly/2 + L1 + L2*cos(-3/8*roll));
+
 
 
 }
