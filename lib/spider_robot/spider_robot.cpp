@@ -54,21 +54,22 @@ Spider_Robot::Spider_Robot(){
     BIG_f_step_size = 8.65;
     SMALL_f_step_size = 6.15;
 
-    W_posA[0] = Position(walk_x_OUT, walk_y, walk_z);         
-    W_posA[1] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);        
-    W_posA[2] = Position(walk_x_IN, walk_y, walk_z);       
+    W_posA[0] = Position(walk_x_IN, walk_y, walk_z);   
+    W_posA[1] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z);       
+    W_posA[2] = Position(walk_x_OUT, walk_y, walk_z);      
 
-    W_posB[0] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z + 0.35);           
-    W_posB[1] = Position(walk_x_OUT, walk_y, walk_z + 0.35);        
-    W_posB[2] = Position(walk_x_IN, walk_y, walk_z + 0.35);        
+    W_posB[0] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z + 0.5);        
+    W_posB[1] = Position(walk_x_IN, walk_y, walk_z + 0.5);      
+    W_posB[2] = Position(walk_x_OUT, walk_y, walk_z + 0.5);
 
-    W_posC[0] = Position(walk_x_IN, walk_y, walk_z);        
-    W_posC[1] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z);      
-    W_posC[2] = Position(walk_x_OUT, walk_y, walk_z);        
+    W_posC[0] = Position(walk_x_IN, walk_y, walk_z);         
+    W_posC[1] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);        
+    W_posC[2] = Position(walk_x_IN, walk_y, walk_z);       
 
-    W_posD[0] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);   
-    W_posD[1] = Position(walk_x_IN, walk_y, walk_z);       
-    W_posD[2] = Position(walk_x_OUT, walk_y, walk_z);      
+    W_posD[0] = Position(walk_x_IN + BIG_f_step_size - 0.5, walk_y, walk_z);           
+    W_posD[1] = Position(walk_x_OUT, walk_y - 0.5, walk_z);        
+    W_posD[2] = Position(walk_x_IN, walk_y - 0.5, walk_z);        
+
 
     // Lateral Walking positions ----------------------------------------
 
@@ -226,14 +227,14 @@ void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD
             {
             case 0:
                 Serial.println("Computing trajectory for pos 0 ----------");
-                
-                if (enableB && !legB.checkTrajectoryComputation(1)){
-                    Serial.println("[LEG B] Desired Position = " + String(W_posB[0].getX()) + ", " + String(W_posB[0].getY()) + ", " + String(W_posB[0].getZ()));
-                    legB.computeTrajectory(W_posB[0], 0, 1);
+                    
+                if (enableD && !legD.checkTrajectoryComputation(1)){
+                    Serial.println("[LEG D]");
+                    legD.computeTrajectory(W_posD[0], 0, 1);
                 } else {
-                    Serial.println("[LEG B] Trajectory 1 already computed (or LEG disabled)");
-                    legB.setDesiredFootPosition(W_posB[0]);
-                    legB.resetTrajectory();
+                    Serial.println("[LEG D] Trajectory 1 already computed (or LEG disabled)");
+                    legD.setDesiredFootPosition(W_posD[0]);
+                    legD.resetTrajectory();
                 }
 
                 Serial.println("Trajectories computed -------------------");
@@ -249,12 +250,12 @@ void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD
                     legA.resetTrajectory();
                 }
 
-                if (enableB && !legB.checkTrajectoryComputation(2)){
-                    Serial.println("[LEG B] Desired Position = " + String(W_posB[1].getX()) + ", " + String(W_posB[1].getY()) + ", " + String(W_posB[1].getZ()));
-                    legB.computeTrajectory(W_posB[1], 1, 2);
+                if (enableB && !legB.checkTrajectoryComputation(1)){
+                    Serial.println("[LEG B] Desired Position = " + String(W_posB[0].getX()) + ", " + String(W_posB[0].getY()) + ", " + String(W_posB[0].getZ()));
+                    legB.computeTrajectory(W_posB[0], 1, 1);
                 } else {
                     Serial.println("[LEG B] Trajectory 2 already computed (or LEG disabled)");
-                    legB.setDesiredFootPosition(W_posB[1]);
+                    legB.setDesiredFootPosition(W_posB[0]);
                     legB.resetTrajectory();
                 }
 
@@ -267,12 +268,12 @@ void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD
                     legC.resetTrajectory();
                 }
 
-                if (enableD && !legD.checkTrajectoryComputation(1)){
+                if (enableD && !legD.checkTrajectoryComputation(2)){
                     Serial.println("[LEG D]");
-                    legD.computeTrajectory(W_posD[0], 1, 1);
+                    legD.computeTrajectory(W_posD[1], 1, 2);
                 } else {
                     Serial.println("[LEG D] Trajectory 1 already computed (or LEG disabled)");
-                    legD.setDesiredFootPosition(W_posD[0]);
+                    legD.setDesiredFootPosition(W_posD[1]);
                     legD.resetTrajectory();
                 }
 
@@ -281,13 +282,13 @@ void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD
             case 2:
                 Serial.println("Computing trajectory for pos 2 ----------");
 
-                if (enableD && !legD.checkTrajectoryComputation(2)){
-                    Serial.println("[LEG D]");
-                    legD.computeTrajectory(W_posD[1], 0, 2);
+                if (enableB && !legB.checkTrajectoryComputation(2)){
+                    Serial.println("[LEG B] Desired Position = " + String(W_posB[1].getX()) + ", " + String(W_posB[1].getY()) + ", " + String(W_posB[1].getZ()));
+                    legB.computeTrajectory(W_posB[1], 0, 2);
                 } else {
-                    Serial.println("[LEG D] Trajectory 2 already computed (or LEG disabled)");
-                    legD.setDesiredFootPosition(W_posD[1]);
-                    legD.resetTrajectory();
+                    Serial.println("[LEG B] Trajectory 2 already computed (or LEG disabled)");
+                    legB.setDesiredFootPosition(W_posB[1]);
+                    legB.resetTrajectory();
                 }
 
                 Serial.println("Trajectories computed -------------------");
@@ -295,24 +296,24 @@ void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD
             case 3:
                 Serial.println("Computing trajectory for pos 3 ----------");
 
-                if (enableC && !legC.checkTrajectoryComputation(2)){
-                    Serial.println("[LEG C]");
-                    legC.computeTrajectory(W_posC[1], 0, 2);
+                if (enableA && !legA.checkTrajectoryComputation(2)){
+                    Serial.println("[LEG A]");
+                    legA.computeTrajectory(W_posA[1], 0, 2);
                 } else {
-                    Serial.println("[LEG C] Trajectory 2 already computed (or LEG disabled)");
-                    legC.setDesiredFootPosition(W_posC[1]);
-                    legC.resetTrajectory();
+                    Serial.println("[LEG A] Trajectory 1 already computed (or LEG disabled)");
+                    legA.setDesiredFootPosition(W_posA[1]);
+                    legA.resetTrajectory();
                 }
 
                 Serial.println("Trajectories computed -------------------");
                 break;
             case 4:
-                if (enableA && !legA.checkTrajectoryComputation(2)){
+                if (enableA && !legA.checkTrajectoryComputation(3)){
                     Serial.println("[LEG A]");
-                    legA.computeTrajectory(W_posA[1], 1, 2);
+                    legA.computeTrajectory(W_posA[2], 1, 3);
                 } else {
                     Serial.println("[LEG A] Trajectory 2 already computed (or LEG disabled)");
-                    legA.setDesiredFootPosition(W_posA[1]);
+                    legA.setDesiredFootPosition(W_posA[2]);
                     legA.resetTrajectory();
                 }
 
@@ -325,12 +326,12 @@ void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD
                     legB.resetTrajectory();
                 }
 
-                if (enableC && !legC.checkTrajectoryComputation(3)){
+                if (enableC && !legC.checkTrajectoryComputation(2)){
                     Serial.println("[LEG C]");
-                    legC.computeTrajectory(W_posC[2], 1, 3);
+                    legC.computeTrajectory(W_posC[1], 1, 2);
                 } else {
                     Serial.println("[LEG C] Trajectory 3 already computed (or LEG disabled)");
-                    legC.setDesiredFootPosition(W_posC[2]);
+                    legC.setDesiredFootPosition(W_posC[1]);
                     legC.resetTrajectory();
                 }
 
@@ -344,13 +345,13 @@ void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD
                 }
                 break;
             case 5: 
-                if (enableA && !legA.checkTrajectoryComputation(3)){
-                    Serial.println("[LEG A]");
-                    legA.computeTrajectory(W_posA[2], 0, 3);
+                if (enableC && !legC.checkTrajectoryComputation(3)){
+                    Serial.println("[LEG C]");
+                    legC.computeTrajectory(W_posC[2], 0, 3);
                 } else {
-                    Serial.println("[LEG A] Trajectory 3 already computed (or LEG disabled)");
-                    legA.setDesiredFootPosition(W_posA[2]);
-                    legA.resetTrajectory();
+                    Serial.println("[LEG C] Trajectory 3 already computed (or LEG disabled)");
+                    legC.setDesiredFootPosition(W_posC[2]);
+                    legC.resetTrajectory();
                 }
                 break;
             default:
@@ -362,28 +363,28 @@ void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD
         Serial.println("Moving legs on Position " + String(pos_index) + " --------------------------------");
         switch(pos_index){
             case 0:
-                if (enableB ){legB.moveOnTrajectory(1);}
+                if (enableD){legD.moveOnTrajectory(1);}
                 break;
             case 1:
-                if (enableA ){legA.moveOnTrajectory(1);}
-                if (enableB ){legB.moveOnTrajectory(2);}
-                if (enableC ){legC.moveOnTrajectory(1);}
-                if (enableD ){legD.moveOnTrajectory(1);}
+                if (enableA){legA.moveOnTrajectory(1);}
+                if (enableB){legB.moveOnTrajectory(1);}
+                if (enableC){legC.moveOnTrajectory(1);}
+                if (enableD){legD.moveOnTrajectory(2);}
                 break;
             case 2:
-                if (enableD) {legD.moveOnTrajectory(2);}
+                if (enableB) {legB.moveOnTrajectory(2);}
                 break;
             case 3:
-                if (enableC ){legC.moveOnTrajectory(2);}
+                if (enableA ){legA.moveOnTrajectory(2);}
                 break;
             case 4:
-                if (enableA){legA.moveOnTrajectory(2);}
+                if (enableA){legA.moveOnTrajectory(3);}
                 if (enableB){legB.moveOnTrajectory(3);}
-                if (enableC){legC.moveOnTrajectory(3);}
+                if (enableC){legC.moveOnTrajectory(2);}
                 if (enableD){legD.moveOnTrajectory(3);}
                 break;
             case 5:
-                if (enableA){legA.moveOnTrajectory(3);}
+                if (enableC){legC.moveOnTrajectory(3);}
                 break;
             default:
                 break;
@@ -862,8 +863,8 @@ bool Spider_Robot::lift(bool enableA, bool enableB, bool enableC, bool enableD, 
     walk_x_IN = x_AB;
     walk_x_OUT = x_CD;
 
-    BIG_f_step_size = BIG_f_step_size - 0.75;
-    SMALL_f_step_size = SMALL_f_step_size - 0.75;
+    BIG_f_step_size = BIG_f_step_size - 0.5;
+    SMALL_f_step_size = SMALL_f_step_size - 0.5;
 
     updateWalkingPositions();
 
@@ -920,8 +921,8 @@ bool Spider_Robot::lower(bool enableA, bool enableB, bool enableC, bool enableD,
     walk_x_IN = x_AB;
     walk_x_OUT = x_CD;
 
-    BIG_f_step_size = BIG_f_step_size + 0.75;
-    SMALL_f_step_size = SMALL_f_step_size + 0.75;
+    BIG_f_step_size = BIG_f_step_size + 0.5;
+    SMALL_f_step_size = SMALL_f_step_size + 0.5;
 
     updateWalkingPositions();
 
@@ -942,21 +943,21 @@ int Spider_Robot::getHeigthIndex(){
 
 void Spider_Robot::updateWalkingPositions(){
 
-    W_posB[0] = Position(walk_x_OUT, walk_y, walk_z);         
-    W_posB[1] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);        
-    W_posB[2] = Position(walk_x_IN, walk_y, walk_z);       
+    W_posA[0] = Position(walk_x_IN, walk_y, walk_z);   
+    W_posA[1] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z);       
+    W_posA[2] = Position(walk_x_OUT, walk_y, walk_z);      
 
-    W_posA[0] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z + 0.35);           
-    W_posA[1] = Position(walk_x_OUT, walk_y, walk_z + 0.35);        
-    W_posA[2] = Position(walk_x_IN, walk_y, walk_z + 0.35);        
+    W_posB[0] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z + 0.5);        
+    W_posB[1] = Position(walk_x_IN, walk_y, walk_z + 0.5);      
+    W_posB[2] = Position(walk_x_OUT, walk_y, walk_z + 0.5);
 
-    W_posD[0] = Position(walk_x_IN, walk_y, walk_z);        
-    W_posD[1] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z);      
-    W_posD[2] = Position(walk_x_OUT, walk_y, walk_z);        
+    W_posC[0] = Position(walk_x_IN, walk_y, walk_z);         
+    W_posC[1] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);        
+    W_posC[2] = Position(walk_x_IN, walk_y, walk_z);       
 
-    W_posC[0] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);   
-    W_posC[1] = Position(walk_x_IN, walk_y, walk_z);       
-    W_posC[2] = Position(walk_x_OUT, walk_y, walk_z);       
+    W_posD[0] = Position(walk_x_IN + BIG_f_step_size - 0.5, walk_y, walk_z);           
+    W_posD[1] = Position(walk_x_OUT, walk_y - 0.5, walk_z);        
+    W_posD[2] = Position(walk_x_IN, walk_y - 0.5, walk_z);    
 
     // Lateral Walking positions ----------------------------------------
 

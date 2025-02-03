@@ -129,10 +129,10 @@ LEG legB(3, 4, 5, 3.65, 5.3, 8.2, LEG_B_THETA1_OFFSET, LEG_B_THETA2_OFFSET, LEG_
 LEG legC(6, 7, 8, 3.35, 4.75, 8.2, LEG_C_THETA1_OFFSET, LEG_C_THETA2_OFFSET, LEG_C_THETA3_OFFSET, 'C');
 LEG legD(9, 10, 11, 3.65, 5.3, 8.2, LEG_D_THETA1_OFFSET, LEG_D_THETA2_OFFSET, LEG_D_THETA3_OFFSET, 'D');
 
-Position initLegA(-0.65, 3.75, -5.7);
-Position initLegB(-0.65, 3.75, -5.2);
-Position initLegC(1.85, 3.75, -5.7);
-Position initLegD(1.85, 3.75, -5.7);
+Position initLegA(1.85, 3.75, -5.7);
+Position initLegB(1.85, 3.75, -5.2);
+Position initLegC(-0.65, 3.75, -5.7);
+Position initLegD(-0.65, 3.75, -5.2);
 
 Position walk_pos(120,0,0);
 
@@ -391,7 +391,7 @@ void loop() {
         } else if (walk_over_obstacles_fsm.state == sm2_lift && !M){
           walk_over_obstacles_fsm.new_state = sm2_walk;
           spider.lift(true, true, true, true, true);
-        }
+        } 
 
         set_state(walk_over_obstacles_fsm, walk_over_obstacles_fsm.new_state);
 
@@ -403,9 +403,15 @@ void loop() {
             spider.walkTo(true, true, true, true, true, walk_pos);
             break;
           case sm2_lift:
-            if (last_lift - millis() > 500){
-              spider.lift(true, true, true, true, true);
-              last_lift = now;
+            now = millis();
+            if (last_lift - now > 1000){
+              if (spider.higherPositionAvailable()){
+                spider.lift(true, true, true, true, true);
+                last_lift = now;
+              } else {
+                Serial.println("NO HIGHER POSITION AVAILABLE! ");
+              }
+              Serial.print("HEIGHT INDEX = " + String(spider.getHeigthIndex() + " @" + String(last_lift)));
             } else {
               Serial.println("Waiting until next lift");
             }
