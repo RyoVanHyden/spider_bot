@@ -25,6 +25,7 @@ private:
     Position W_posA[3], W_posB[3], W_posC[3], W_posD[3];
     Position LW_posA[3], LW_posB[3], LW_posC[3], LW_posD[3];
     Position R_posA[3], R_posB[3], R_posC[3], R_posD[3];
+    Position CR_posA[4], CR_posB[4], CR_posC[4], CR_posD[4];
     Position I_posA[3], I_posB[3], I_posC[3], I_posD[3];
 
     Position Current_location, Desired_location;
@@ -53,7 +54,7 @@ private:
         unsigned long tes, tis;
     } fsm;
 
-    fsm walk_fsm, lateral_walk_fsm, rotate_fsm, incline_fsm, lift_fsm;
+    fsm walk_fsm, lateral_walk_fsm, rotate_fsm, incline_fsm, lift_fsm, continuos_rotation_fsm;
 
     void setNewState(fsm& sm, int new_state);
 
@@ -83,6 +84,7 @@ public:
     void walkTo(bool enableA, bool enableB, bool enableC, bool enableD, bool next, Position Desired_location);
     void lateral_walk(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     void rotate(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
+    void continuosRotation(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     void incline(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     bool lift(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     bool lower(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
@@ -103,6 +105,8 @@ public:
     void setDesiredLocation(Position pos);
 
     bool DesiredLocationReached();
+
+    void printCRPositions();
 
 };
 

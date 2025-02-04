@@ -29,8 +29,15 @@ private:
         Position R_second_trajectory_points[rtp];         //index = 5
         bool R_trajectory1_computed, R_trajectory2_computed;
 
-        //Lifting Trajectory -----------------------------------------
-        Position L_first_trajectory_points[ltp];           //index = 6
+
+        Position CR_first_trajectory_points[rtp];         //index = 6
+        Position CR_second_trajectory_points[rtp];        //index = 7
+        Position CR_third_trajectory_points[rtp];         //index = 8
+        Position CR_fourth_trajectory_points[rtp];        //index = 9
+        bool CR_trajectory1_computed, CR_trajectory2_computed, CR_trajectory3_computed, CR_trajectory4_computed;
+
+        //Lifting Trajectory --------------------------- [DESCONTINUED]
+        Position L_first_trajectory_points[ltp];          
         bool L_trajectory_computed;
 
         int t_index;

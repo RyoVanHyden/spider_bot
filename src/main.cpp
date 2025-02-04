@@ -460,7 +460,7 @@ void loop() {
         spider.lateral_walk(true, true, true, true, N);
         break;
       case sm1_rotate:
-        spider.rotate(true, true, true, true, N);
+        spider.continuosRotation(true, true, true, true, true);
         break;
       case sm1_lift:
         spider.lift(true, true, true, true, true);
