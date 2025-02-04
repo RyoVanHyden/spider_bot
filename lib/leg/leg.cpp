@@ -345,6 +345,25 @@ void LEG::resetTrajectory(){
 
 //Writes the desired angles to the servos, and updates the current joint angles of the leg with those values
 void LEG::quickMove(float dt1, float dt2, float dt3){
+
+    if (dt1 > 170){
+        dt1=170;
+    } else if (dt1 < 5){
+        dt1 = 5;
+    }
+
+    if (dt2 > 170){
+        dt2=170;
+    } else if (dt2 < 5){
+        dt2 = 5;
+    }
+
+    if (dt3 > 170){
+        dt3=170;
+    } else if (dt3 < 5){
+        dt3 = 5;
+    }
+
     desired_theta1 = dt1;
     desired_theta2 = dt2;
     desired_theta3 = dt3;

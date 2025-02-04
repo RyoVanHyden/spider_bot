@@ -42,7 +42,6 @@ private:
         bool isOnDesiredPosition, isOnTrajectory;
 
         bool compareValues(float t1, float t2, float df);
-        void quickMove(float it1, float it2, float it3);
     
         //Cinemática ------------------------------------------------
         
@@ -72,6 +71,8 @@ public:
 
     //Computes the position of the foot based on the current joint angles
     void computeFootPosition();
+
+    void quickMove(float it1, float it2, float it3);
 
     //Get the current joint angles
     void getCurrentJointAngles(float& t1, float& t2, float& t3);

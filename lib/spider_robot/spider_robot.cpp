@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include "position.h"
+#include <cmath>
 
 Spider_Robot::Spider_Robot(){
    
@@ -1012,17 +1013,36 @@ void Spider_Robot::updateWalkingPositions(){
 }
 
 void Spider_Robot::stabilise(float roll, float pitch){
-    float Ly = 7.5;
+    float Ly = 9.25;
     float Lx = 10.5;
     float L1 = 3.35;
     float L2 = 4.7;
-
+    float L3 = 8.2;
 
     roll = roll *(PI/180.0);
     pitch = pitch *(PI/180.0);
 
-    float delta_z_roll = tan(roll) * (Ly/2 + L1 + L2*cos(-3/8*roll));
+    float thetaC = -(8/3)*roll;
 
+    float delta_z_roll = tan(roll)*(Ly/2 + L1 + L2*cos(thetaC));
+    float delta_z_pitch = (Lx/2)*sin(pitch);
+
+    Position c_pos = legA.getDesiredFootPosition();
+
+    Position higher_pos = Position(c_pos.getX(), c_pos.getY(), c_pos.getZ() + delta_z_roll);
+    Position lower_pos = Position(c_pos.getX(), c_pos.getY(), c_pos.getZ() - delta_z_roll);
+
+    Position new_A_pos = Position(c_pos.getX(), c_pos.getY(), c_pos.getZ() + delta_z_roll - delta_z_pitch);
+    Position new_B_pos = Position(c_pos.getX(), c_pos.getY(), c_pos.getZ() + delta_z_roll + delta_z_pitch);
+    Position new_C_pos = Position(c_pos.getX(), c_pos.getY(), c_pos.getZ() - delta_z_roll + delta_z_pitch);
+    Position new_D_pos = Position(c_pos.getX(), c_pos.getY(), c_pos.getZ() - delta_z_roll - delta_z_pitch);
+
+    legA.moveTo(new_A_pos);
+    legB.moveTo(new_B_pos);
+    legC.moveTo(new_C_pos);
+    legD.moveTo(new_D_pos);
+
+    Serial.println("Delta Z ROLL = " + String(delta_z_roll) + " | Delta Z PITCH = " + String(delta_z_pitch));
 
 
 }
