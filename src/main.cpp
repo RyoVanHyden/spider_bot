@@ -22,7 +22,8 @@
 uint32_t now, last_time;
 uint32_t last_lift;
 
-uint32_t interval = 500;
+uint32_t intervals[] = {10, 50, 100, 250, 500};
+int interval_index = 1;
 
 float temp1;
 
@@ -47,7 +48,7 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 
 MPU6050 mpu;
 #define PITCH_OFFSET 4.30
-#define ROLL_OFFSET 172.10
+#define ROLL_OFFSET 177.10
 
 float distance = 0.0;
 
@@ -87,7 +88,7 @@ Position test_pos (0.0, 0.0, 0.0);
 
 //FSM VARIABLES --------------------------------------------
 
-bool S, W, I, T, l, R, u, d, O, M, X;
+bool S, W, I, T, l, R, u, d, O, M, X, FASTER, SLOWER;
 
 typedef struct {
   int state, new_state;
@@ -118,6 +119,12 @@ enum{
   sm2_lift
 };
 
+enum{
+  sm3_idle = 0,
+  sm3_faster, 
+  sm3_slower
+};
+
 int previous_state = 0;
 
 void set_state(fsm_t& fsm, int new_state)
@@ -131,8 +138,9 @@ void set_state(fsm_t& fsm, int new_state)
 
 fsm_t robot_fsm;
 fsm_t walk_over_obstacles_fsm;
+fsm_t speed_fsm;
 
-// Robot Variables ------------------------------------------
+// Robot Variables -------------------------------------------
 
 Spider_Robot spider;
 
@@ -148,7 +156,7 @@ Position initLegD(-0.65, 3.75, -5.2);
 
 Position walk_pos(120,0,0);
 
-// FIR ------------------------------------------------------
+// FIR -------------------------------------------------------
 
 typedef struct {
   float entries[5];
@@ -198,6 +206,9 @@ void readIMU(){
     pitch = PITCH_OFFSET + atan2(-accelX, sqrt(accelY * accelY + accelZ * accelZ)) * 180.0 / PI;
 
     if (roll > 180.0){roll = roll - 360.0;}
+
+    if (abs(roll) < 2.0){roll = 0.0;}
+    if (abs(pitch) < 2.0){pitch = 0.0;}
 
     addEntry(IMU_PITCH_FIR, pitch);
     addEntry(IMU_ROLL_FIR, roll);
@@ -276,13 +287,15 @@ void loop() {
       else if (b == 'd') d = true;
       else if (b == 'O') O = true;
       else if (b == 'X') X = true;
+      else if (b == '1') SLOWER = true;
+      else if (b == '2') FASTER = true;
     } 
 
     now = millis();
 
     //Serial.print("[BEGINING] NOW = " + String(now) + ", Last time = " + String(last_time) + "\n");
 
-    if ((now-last_time > interval)) {
+    if ((now-last_time > intervals[interval_index])) {
 
       Serial.print("NEW CYCLE -------------------------------------------------------------|\n");
      
@@ -342,7 +355,7 @@ void loop() {
       } else if (robot_fsm.state == sm1_idle && X){
         robot_fsm.new_state = sm1_stabilize;
         spider.legA.moveTo(Position(0, 3.75, -5.7));
-        spider.legB.moveTo(Position(0, 3.75, -5.7));
+        spider.legB.moveTo(Position(0, 3.75, -5.3));
         spider.legC.moveTo(Position(0, 3.75, -5.7));
         spider.legD.moveTo(Position(0, 3.75, -5.7));
       } else if (robot_fsm.state == sm1_lift){
@@ -384,11 +397,24 @@ void loop() {
         robot_fsm.new_state = sm1_test_pos;
       }
       }
+
+      if (speed_fsm.state == sm3_idle && FASTER){
+        speed_fsm.new_state = sm3_faster;
+      } else if (speed_fsm.state == sm3_idle && SLOWER){
+        speed_fsm.new_state = sm3_slower;
+      } else if (speed_fsm.state == sm3_faster){
+        speed_fsm.new_state = sm3_idle;
+      } else if (speed_fsm.state == sm3_slower){
+        speed_fsm.new_state = sm3_idle;
+      }
+
       //(3/4) - UPDATE STATES
       set_state(robot_fsm, robot_fsm.new_state);
+      set_state(speed_fsm, speed_fsm.new_state);
 
       Serial.println("'ROBOT' FSM STATE: " + String(robot_fsm.state) + " | INPUTS: W = " + String(W) + ", S = " + String(S) + ", I = " + String(I) + ", T = " + T + ", H = " + H + ", L = " + L + ", N = " + N + ", R = " + R + ", l = " + l + ", u = " + u + ", d = " + d);
       Serial.println("'WALK OVER OBSTACLES' FSM STATE: " + String(walk_over_obstacles_fsm.state));
+      Serial.println("Speed interval (" + String(interval_index) + "): " + String(intervals[interval_index]) + " | FASTER = " + String(FASTER) + " | SLOWER = " + String(SLOWER));
       spider.legA.getCurrentJointAngles(t1, t2, t3);
       Serial.print("LEG A: POS = (" + String(spider.legA.getCurrentFootPosition().getX()) + ", " + String(spider.legA.getCurrentFootPosition().getY()) + ", " + String(spider.legA.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");
       spider.legB.getCurrentJointAngles(t1, t2, t3);
@@ -434,7 +460,7 @@ void loop() {
         spider.lateral_walk(true, true, true, true, N);
         break;
       case sm1_rotate:
-        spider.rotate(true, true, true, true, true);
+        spider.rotate(true, true, true, true, N);
         break;
       case sm1_lift:
         spider.lift(true, true, true, true, true);
@@ -483,7 +509,7 @@ void loop() {
 
         break;
       case sm1_stabilize:
-        spider.stabilise(IMU_PITCH_FIR.output, IMU_ROLL_FIR.output);
+        spider.stabilise(IMU_ROLL_FIR.output, IMU_PITCH_FIR.output);
 
         break;
       case sm1_test_pos:
@@ -496,102 +522,37 @@ void loop() {
         if (L) {delta_theta-=0.1;}
         if (N) {servo_test_id++;delta_theta=0;}
 
-
         //addEntry(IMU_ROLL_FIR, roll);
-
-        break;
-      case sm1_testA:
-        cx = spider.legA.getCurrentFootPosition().getX();
-        cy = spider.legA.getCurrentFootPosition().getY();
-        cz = spider.legA.getCurrentFootPosition().getZ();
-
-        test_pos.setX(cx);
-        test_pos.setY(cy);
-        test_pos.setZ(cz);
-
-        if (H) {test_pos.setX(cx + 0.025);}
-        if (L) {test_pos.setX(cx - 0.025);}
-
-        if (E) {test_pos.setY(cy + 0.025);}
-        if (G) {test_pos.setX(cy - 0.025);}
-        
-        if (J) {test_pos.setZ(cz + 0.025);}
-        if (K) {test_pos.setZ(cz - 0.025);}        
-
-        spider.legA.moveTo(test_pos);
-
-        break;
-      case sm1_testB:
-        cx = spider.legB.getCurrentFootPosition().getX();
-        cy = spider.legB.getCurrentFootPosition().getY();
-        cz = spider.legB.getCurrentFootPosition().getZ();
-
-        test_pos.setX(cx);
-        test_pos.setY(cy);
-        test_pos.setZ(cz);
-
-        if (H) {test_pos.setX(cx + 0.1);}
-        if (L) {test_pos.setX(cx - 0.1);}
-
-        if (E) {test_pos.setY(cy + 0.1);}
-        if (G) {test_pos.setX(cy - 0.1);}
-        
-        if (J) {test_pos.setZ(cz + 0.1);}
-        if (K) {test_pos.setZ(cz - 0.1);}        
-
-        spider.legB.moveTo(test_pos);
-
-        break;
-      case sm1_testC:
-
-        cx = spider.legC.getCurrentFootPosition().getX();
-        cy = spider.legC.getCurrentFootPosition().getY();
-        cz = spider.legC.getCurrentFootPosition().getZ();
-
-        test_pos.setX(cx);
-        test_pos.setY(cy);
-        test_pos.setZ(cz);
-
-        if (H) {test_pos.setX(cx + 0.025);}
-        if (L) {test_pos.setX(cx - 0.025);}
-
-        if (J) {test_pos.setY(cy + 0.025);}
-        if (K) {test_pos.setX(cy - 0.025);}
-        
-        if (C) {test_pos.setZ(cz + 0.025);}
-        if (D) {test_pos.setZ(cz - 0.025);}        
-
-        spider.legC.moveTo(test_pos);
-
-        break;
-      case sm1_testD:
-        cx = spider.legD.getCurrentFootPosition().getX();
-        cy = spider.legD.getCurrentFootPosition().getY();
-        cz = spider.legD.getCurrentFootPosition().getZ();
-
-        test_pos.setX(cx);
-        test_pos.setY(cy);
-        test_pos.setZ(cz);
-
-        if (H) {test_pos.setX(cx + 0.025);}
-        if (L) {test_pos.setX(cx - 0.025);}
-
-        if (J) {test_pos.setY(cy + 0.025);}
-        if (K) {test_pos.setX(cy - 0.025);}
-        
-        if (C) {test_pos.setZ(cz + 0.025);}
-        if (D) {test_pos.setZ(cz - 0.025);}        
-
-        spider.legD.moveTo(test_pos);
 
         break;
       default:
         break;
       }
 
+      switch(speed_fsm.state){
+        case sm3_idle:
+          break;
+        case sm3_faster:
+          if (interval_index > 0){
+            interval_index--;
+          } else {
+            Serial.println("MAXIMUM SPEED REACHED!");
+          }
+          break;
+        case sm3_slower:
+          if (interval_index < 4){
+            interval_index++;
+          } else {
+            Serial.println("MINIMUM SPEED REACHED!");
+          }
+          break;
+        default:
+          break;
+      }
+
      Serial.println("End of Cycle ----------------------------------------------------------|");
 
-      I = W = S = T = L = H = N = A = B = C = D = E = G = J = K = l = R = u = d = O = M = X = false;
+      I = W = S = T = L = H = N = A = B = C = D = E = G = J = K = l = R = u = d = O = M = X = FASTER = SLOWER = false;
       
       last_time = now;
       
