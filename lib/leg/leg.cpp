@@ -489,6 +489,11 @@ void LEG::resetAllTrajectoryComputations(){
     W_trajectory3_computed = false;
     R_trajectory1_computed = false;
     R_trajectory2_computed = false;
+    CR_trajectory1_computed = false;
+    CR_trajectory2_computed = false;
+    CR_trajectory3_computed = false;
+    CR_trajectory4_computed = false;
+    resetTrajectory();
 }
 
 void LEG::computeTrajectory(Position d_pos, int mode, int trajectory_index){

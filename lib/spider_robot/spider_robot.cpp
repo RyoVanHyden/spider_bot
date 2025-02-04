@@ -65,9 +65,9 @@ Spider_Robot::Spider_Robot(){
     W_posB[1] = Position(walk_x_IN, walk_y, walk_z + 0.5);      
     W_posB[2] = Position(walk_x_OUT, walk_y, walk_z + 0.5);
 
-    W_posC[0] = Position(walk_x_IN, walk_y, walk_z);         
-    W_posC[1] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z);        
-    W_posC[2] = Position(walk_x_IN, walk_y, walk_z);       
+    W_posC[0] = Position(walk_x_IN, walk_y, walk_z - 0.2);         
+    W_posC[1] = Position(walk_x_OUT + SMALL_f_step_size, walk_y, walk_z - 0.2);        
+    W_posC[2] = Position(walk_x_IN, walk_y, walk_z - 0.2);       
 
     W_posD[0] = Position(walk_x_IN + BIG_f_step_size - 0.5, walk_y, walk_z);           
     W_posD[1] = Position(walk_x_OUT, walk_y - 0.5, walk_z);        
@@ -82,13 +82,13 @@ Spider_Robot::Spider_Robot(){
     LW_posA[1] = Position(-0.0865, walk_y - lat_step_size, walk_z);
     LW_posA[2] = Position(-0.650, walk_y, walk_z);
 
-    LW_posB[0] = Position(-1.210, walk_y + lat_step_size, walk_z + 0.35);
-    LW_posB[1] = Position(-0.9315, walk_y + lat_step_size/2, walk_z + 0.35);
-    LW_posB[2] = Position(-0.65, walk_y, walk_z + 0.35);
+    LW_posB[0] = Position(-1.210, walk_y + lat_step_size, walk_z + 0.5);
+    LW_posB[1] = Position(-0.9315, walk_y + lat_step_size/2, walk_z + 0.5);
+    LW_posB[2] = Position(-0.65, walk_y, walk_z + 0.5);
 
-    LW_posC[0] = Position(2.6517, walk_y + lat_step_size/2, walk_z);
-    LW_posC[1] = Position(1.0483, walk_y - lat_step_size/2, walk_z);
-    LW_posC[2] = Position(1.85, walk_y, walk_z);
+    LW_posC[0] = Position(2.6517, walk_y + lat_step_size/2, walk_z - 0.2);
+    LW_posC[1] = Position(1.0483, walk_y - lat_step_size/2, walk_z - 0.2);
+    LW_posC[2] = Position(1.85, walk_y, walk_z - 0.2);
 
     LW_posD[0] = Position(2.6517, walk_y + lat_step_size/2, walk_z);
     LW_posD[1] = Position(1.0483, walk_y - lat_step_size/2, walk_z);
@@ -105,13 +105,13 @@ Spider_Robot::Spider_Robot(){
     R_posA[1] = Position(-x_rot, y_rot, walk_z);
     R_posA[2] = Position(0, walk_y, walk_z);
     
-    R_posB[0] = Position(0, walk_y, walk_z + 0.35);
-    R_posB[1] = Position(x_rot, y_rot, walk_z + 0.35);
-    R_posB[2] = Position(0, walk_y, walk_z + 0.35);
+    R_posB[0] = Position(0, walk_y, walk_z + 0.5);
+    R_posB[1] = Position(x_rot, y_rot, walk_z + 0.5);
+    R_posB[2] = Position(0, walk_y, walk_z + 0.5);
     
-    R_posC[0] = Position(0, walk_y, walk_z);
-    R_posC[1] = Position(-x_rot, y_rot, walk_z);
-    R_posC[2] = Position(0, walk_y, walk_z);
+    R_posC[0] = Position(0, walk_y, walk_z - 0.2);
+    R_posC[1] = Position(-x_rot, y_rot, walk_z - 0.2);
+    R_posC[2] = Position(0, walk_y, walk_z - 0.2);
     
     R_posD[0] = Position(0, walk_y, walk_z);
     R_posD[1] = Position(x_rot, y_rot, walk_z);
@@ -126,20 +126,23 @@ Spider_Robot::Spider_Robot(){
     CR_posA[2] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z);
     CR_posA[3] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
 
-    CR_posB[0] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z + 0.35);
-    CR_posB[1] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.35);
-    CR_posB[2] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.35);
-    CR_posB[3] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.35);
+    CR_posB[0] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z + 0.5);
+    CR_posB[1] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.5);
+    CR_posB[2] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.5);
+    CR_posB[3] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.5);
 
-    CR_posC[0] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z);
-    CR_posC[1] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
-    CR_posC[2] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
-    CR_posC[3] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+    CR_posC[0] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
+    CR_posC[1] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
+    CR_posC[2] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
+    CR_posC[3] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
 
     CR_posD[0] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
     CR_posD[1] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
     CR_posD[2] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z);
     CR_posD[3] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+
+    rotation_direction = false;
+    current_angle = 0.0;
 
     // -----------------------------------------------------------------
 
@@ -163,6 +166,13 @@ void Spider_Robot::initializePositions(Position init_posA, Position init_posB, P
     legB.initializePosition(init_posB);
     legC.initializePosition(init_posC);
     legD.initializePosition(init_posD);
+}
+
+void Spider_Robot::reInitializePositions(){
+    legA.initializePosition(Position(walk_x_OUT, walk_y, walk_z));
+    legB.initializePosition(Position(walk_x_OUT, walk_y, walk_z + 0.5));
+    legC.initializePosition(Position(walk_x_IN, walk_y, walk_z - 0.2));
+    legD.initializePosition(Position(walk_x_IN, walk_y, walk_z));
 }
 
 void Spider_Robot::setNewState(fsm& sm, int new_state){
@@ -204,6 +214,10 @@ void Spider_Robot::setDesiredLocation(Position pos){
     Desired_location = pos;
 }
 
+float Spider_Robot::getCurrentAngle(){
+    return current_angle;
+}
+
 bool Spider_Robot::DesiredLocationReached(){
     return (Current_location.isOnPosition(Desired_location, robot_step_size, float(0.2), float(0.2)));
 }
@@ -222,6 +236,10 @@ void Spider_Robot::stop(){
 }
 
 void Spider_Robot::walkTo(bool enableA, bool enableB, bool enableC, bool enableD, bool next, Position Desired_Location){
+
+    if (START_WALKING){
+        setNewState(walk_fsm, sm_idle);
+    }
 
     if (walk_fsm.state == sm_idle && START_WALKING && next){
         walk_fsm.new_state = sm_compute;
@@ -844,7 +862,20 @@ void Spider_Robot::rotate(bool enableA, bool enableB, bool enableC, bool enableD
     }
 }
 
-void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, bool enableD, bool next){
+void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, bool enableD, bool next, bool direction){
+
+    if (direction != rotation_direction){
+        toggleRotationDirection();
+        setNewState(continuos_rotation_fsm, sm_idle);
+        START_ROTATING = true;
+    }
+
+    int step = boolToInt(rotation_direction);
+
+    if (START_ROTATING){
+        setNewState(continuos_rotation_fsm, sm_idle);
+    }
+
     if (continuos_rotation_fsm.state == sm_idle && START_ROTATING && next){
         continuos_rotation_fsm.new_state = sm_compute;
         pos_index = 0;
@@ -853,12 +884,16 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
         legB.resetAllTrajectoryComputations();
         legC.resetAllTrajectoryComputations();
         legD.resetAllTrajectoryComputations();
-
     } else if (continuos_rotation_fsm.state == sm_compute && next){
         continuos_rotation_fsm.new_state = sm_moving;
-
     } else if (continuos_rotation_fsm.state == sm_moving && legsOnDesiredPositions() && next){
         continuos_rotation_fsm.new_state = sm_compute;
+        if(step){
+            current_angle+=20.0;
+        } else {
+            current_angle-=20.0;
+        }
+
         if (pos_index<4){
             pos_index++;
         } else {
@@ -868,6 +903,7 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
 
     setNewState(continuos_rotation_fsm, continuos_rotation_fsm.new_state);
 
+    Serial.println("Rotation Direction: " + String(rotation_direction) + ", step = " + String(step));
 
     switch (continuos_rotation_fsm.state)
     {
@@ -886,6 +922,7 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
                     legA.computeTrajectory(CR_posA[0], 0, 9);
                 } else {
                     Serial.println("[LEG A] LEG disabled");
+                    legA.resetTrajectory();
                 }
 
                 if (enableB){
@@ -893,22 +930,23 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
                     legB.computeTrajectory(CR_posB[0], 0, 9);
                 } else {
                     Serial.println("[LEG B] LEG disabled");
+                    legB.resetTrajectory();
                 }
                 
-
                 if (enableC){
                     Serial.println("[LEG C] Desired Position = " + String(CR_posC[0].getX()) + ", " + String(CR_posC[0].getY()) + ", " + String(CR_posC[0].getZ()));
                     legC.computeTrajectory(CR_posC[0], 0, 9);
                 } else {
                     Serial.println("[LEG C] LEG disabled");
+                    legC.resetTrajectory();
                 }
-               
 
                 if (enableD){
                     Serial.println("[LEG D] Desired Position = " + String(CR_posD[0].getX()) + ", " + String(CR_posD[0].getY()) + ", " + String(CR_posD[0].getZ()));
                     legD.computeTrajectory(CR_posD[0], 0, 9);
                 } else {
                     Serial.println("[LEG D] LEG disabled");
+                    legD.resetTrajectory();
                 }
                 
                 // Reset all other trajectories because trajectory 9 was just used for case 0 to compute the initial position
@@ -922,7 +960,12 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
             case 1: 
                 if (enableA && !legA.checkTrajectoryComputation(6)){
                     Serial.println("[LEG A] Desired Position = " + String(CR_posA[1].getX()) + ", " + String(CR_posA[1].getY()) + ", " + String(CR_posA[1].getZ()));
-                    legA.computeTrajectory(CR_posA[1], 0, 6);
+                    legA.computeTrajectory(CR_posA[1], step, 6);
+                    if(step){
+                        Serial.println("[LEG A] Step = 1, so LEG A performed a shift");
+                    } else {
+                        Serial.println("[LEG A] Step = 0, so LEG A performed a step");
+                    }
                 } else {
                     Serial.println("[LEG A] LEG disabled");
                     legA.setDesiredFootPosition(CR_posA[1]);
@@ -949,7 +992,12 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
 
                 if (enableD && !legD.checkTrajectoryComputation(6)){
                     Serial.println("[LEG D] Desired Position = " + String(CR_posD[1].getX()) + ", " + String(CR_posD[1].getY()) + ", " + String(CR_posD[1].getZ()));
-                    legD.computeTrajectory(CR_posD[1], 1, 6);
+                    legD.computeTrajectory(CR_posD[1], 1-step, 6);
+                    if(step){
+                        Serial.println("[LEG D] Step = 1, so LEG D performed a step");
+                    } else {
+                        Serial.println("[LEG D] Step = 0, so LEG D performed a shift");
+                    }
                 } else {
                     Serial.println("[LEG D] LEG disabled");
                     legD.setDesiredFootPosition(CR_posD[1]);
@@ -970,7 +1018,7 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
 
                 if(enableB && !legB.checkTrajectoryComputation(7)){
                     Serial.println("[LEG B] Desired Position = " + String(CR_posB[2].getX()) + ", " + String(CR_posB[2].getY()) + ", " + String(CR_posB[2].getZ()));
-                    legB.computeTrajectory(CR_posB[2], 0, 7);
+                    legB.computeTrajectory(CR_posB[2], step, 7);
                 } else {
                     Serial.println("[LEG B] LEG disabled");
                     legB.setDesiredFootPosition(CR_posB[2]);
@@ -979,7 +1027,7 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
 
                 if(enableC && !legC.checkTrajectoryComputation(7)){
                     Serial.println("[LEG C] Desired Position = " + String(CR_posC[2].getX()) + ", " + String(CR_posC[2].getY()) + ", " + String(CR_posC[2].getZ()));
-                    legC.computeTrajectory(CR_posC[2], 1, 7);
+                    legC.computeTrajectory(CR_posC[2], 1-step, 7);
                 } else {
                     Serial.println("[LEG C] LEG disabled");
                     legC.setDesiredFootPosition(CR_posC[2]);
@@ -1007,7 +1055,7 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
 
                 if(enableB && !legB.checkTrajectoryComputation(8)){
                     Serial.println("[LEG B] Desired Position = " + String(CR_posB[3].getX()) + ", " + String(CR_posB[3].getY()) + ", " + String(CR_posB[3].getZ()));
-                    legB.computeTrajectory(CR_posB[3], 1, 8);
+                    legB.computeTrajectory(CR_posB[3], 1-step, 8);
                 } else {
                     Serial.println("[LEG B] LEG disabled");
                     legB.setDesiredFootPosition(CR_posB[3]);
@@ -1016,7 +1064,7 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
 
                 if(enableC && !legC.checkTrajectoryComputation(8)){
                     Serial.println("[LEG C] Desired Position = " + String(CR_posC[3].getX()) + ", " + String(CR_posC[3].getY()) + ", " + String(CR_posC[3].getZ()));
-                    legC.computeTrajectory(CR_posC[3], 0, 8);
+                    legC.computeTrajectory(CR_posC[3], step, 8);
                 } else {
                     Serial.println("[LEG C] LEG disabled");
                     legC.setDesiredFootPosition(CR_posC[3]);
@@ -1037,9 +1085,10 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
             case 4:
                 if (enableA && !legA.checkTrajectoryComputation(9)){
                     Serial.println("[LEG A] Desired Position = " + String(CR_posA[0].getX()) + ", " + String(CR_posA[0].getY()) + ", " + String(CR_posA[0].getZ()));
-                    legA.computeTrajectory(CR_posA[0], 1, 9);
+                    legA.computeTrajectory(CR_posA[0], 1-step, 9);
                 } else {
                     Serial.println("[LEG A] LEG disabled");
+                    legA.resetTrajectory();
                 }
 
                 if (enableB && !legB.checkTrajectoryComputation(9)){
@@ -1047,6 +1096,7 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
                     legB.computeTrajectory(CR_posB[0], 1, 9);
                 } else {
                     Serial.println("[LEG B] LEG disabled");
+                    legB.resetTrajectory();
                 }
               
                 if (enableC && !legC.checkTrajectoryComputation(9)){
@@ -1054,14 +1104,15 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
                     legC.computeTrajectory(CR_posC[0], 1, 9);
                 } else {
                     Serial.println("[LEG C] LEG disabled");
+                    legC.resetTrajectory();
                 }
-               
 
                 if (enableD && !legD.checkTrajectoryComputation(9)){
                     Serial.println("[LEG D] Desired Position = " + String(CR_posD[0].getX()) + ", " + String(CR_posD[0].getY()) + ", " + String(CR_posD[0].getZ()));
-                    legD.computeTrajectory(CR_posD[0], 0, 9);
+                    legD.computeTrajectory(CR_posD[0], step, 9);
                 } else {
                     Serial.println("[LEG D] LEG disabled");
+                    legD.resetTrajectory();
                 }
                 break;
              default:
@@ -1087,6 +1138,58 @@ void Spider_Robot::continuosRotation(bool enableA, bool enableB, bool enableC, b
         break;
     default:
         break;
+    }
+}
+
+void Spider_Robot::toggleRotationDirection(){
+
+    rot_angle = 60.0 *(PI/180.0); 
+
+    rotation_direction = !rotation_direction;
+
+    Serial.println("CHANGING ROTATION DIRECTION TO: " + String(rotation_direction) + " ================================================================= ");
+
+    if (!rotation_direction){   // Anti-Clockwise
+        CR_posA[0] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posA[1] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posA[2] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posA[3] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+
+        CR_posB[0] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z + 0.35);
+        CR_posB[1] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.35);
+        CR_posB[2] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.35);
+        CR_posB[3] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.35);
+
+        CR_posC[0] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
+        CR_posC[1] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
+        CR_posC[2] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
+        CR_posC[3] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
+
+        CR_posD[0] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posD[1] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posD[2] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posD[3] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+    } else {    // Clockwise
+        CR_posA[0] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posA[1] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posA[2] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posA[3] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+
+        CR_posB[0] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z + 0.5);
+        CR_posB[1] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.5);
+        CR_posB[2] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.5);
+        CR_posB[3] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z + 0.5);
+
+        CR_posC[0] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
+        CR_posC[1] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
+        CR_posC[2] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
+        CR_posC[3] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z - 0.2);
+
+        CR_posD[0] = Position(tan((2.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posD[1] = Position(tan(-(1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posD[2] = Position(tan((0.0)*rot_angle)*walk_y, walk_y, walk_z);
+        CR_posD[3] = Position(tan((1.0/3.0)*rot_angle)*walk_y, walk_y, walk_z);
+
     }
 }
 
@@ -1340,4 +1443,9 @@ void Spider_Robot::stabilise(float roll, float pitch){
     Serial.println("Delta Z ROLL = " + String(delta_z_roll) + " | Delta Z PITCH = " + String(delta_z_pitch));
 
 
+}
+
+int Spider_Robot::boolToInt(bool b){
+    if (b) {return 1;}
+    else {return 0;}
 }

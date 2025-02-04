@@ -22,8 +22,8 @@
 uint32_t now, last_time;
 uint32_t last_lift;
 
-uint32_t intervals[] = {10, 50, 100, 250, 500};
-int interval_index = 1;
+uint32_t intervals[] = {10, 50, 100, 250, 500, 1000};
+int interval_index = 2;
 
 float temp1;
 
@@ -105,7 +105,7 @@ enum {
   sm1_testD,
   sm1_idle,
   sm1_walk_straight,
-  sm1_walk_over_obstacles,
+  sm1_walk_around_obstacles,
   sm1_rotate,
   sm1_lateral_walk,
   sm1_lift,
@@ -115,8 +115,14 @@ enum {
 
 enum{
   sm2_idle = 0,
-  sm2_walk,
-  sm2_lift
+  sm2_long_walk,
+  sm2_rotate_cw1,
+  sm2_small_walk1,
+  sm2_rotate_acw1,
+  sm2_small_walk2,
+  sm2_rotate_acw2,
+  sm2_small_walk3,
+  sm2_rotate_cw2,
 };
 
 enum{
@@ -137,7 +143,7 @@ void set_state(fsm_t& fsm, int new_state)
 }
 
 fsm_t robot_fsm;
-fsm_t walk_over_obstacles_fsm;
+fsm_t walk_around_obstacles_fsm;
 fsm_t speed_fsm;
 
 // Robot Variables -------------------------------------------
@@ -149,12 +155,16 @@ LEG legB(3, 4, 5, 3.65, 5.3, 8.2, LEG_B_THETA1_OFFSET, LEG_B_THETA2_OFFSET, LEG_
 LEG legC(6, 7, 8, 3.35, 4.75, 8.2, LEG_C_THETA1_OFFSET, LEG_C_THETA2_OFFSET, LEG_C_THETA3_OFFSET, 'C');
 LEG legD(9, 10, 11, 3.65, 5.3, 8.2, LEG_D_THETA1_OFFSET, LEG_D_THETA2_OFFSET, LEG_D_THETA3_OFFSET, 'D');
 
-Position initLegA(1.85, 3.75, -5.7);
+Position initLegA(1.85, 3.75, -5.9);
 Position initLegB(1.85, 3.75, -5.2);
 Position initLegC(-0.65, 3.75, -5.7);
 Position initLegD(-0.65, 3.75, -5.2);
 
 Position walk_pos(120,0,0);
+
+bool rot_dir = false;
+float dist_walked = 0.0;
+float start_x = 0.0;
 
 // FIR -------------------------------------------------------
 
@@ -305,7 +315,7 @@ void loop() {
         distance = float(measure.RangeMilliMeter) - 25.0;
         Serial.print("Distance (mm): " + String(distance)); 
         addEntry(TOF_FIR, distance);
-        M = (TOF_FIR.output <= 150.0);
+        M = (TOF_FIR.output <= 200.0);
         Serial.println("| M = " + String(TOF_FIR.output));
       } else {
         Serial.println("TOF sensor out of range ");
@@ -349,8 +359,8 @@ void loop() {
       } else if (robot_fsm.state == sm1_idle && d){
         robot_fsm.new_state = sm1_lower;
       } else if (robot_fsm.state == sm1_idle && O){
-        robot_fsm.new_state = sm1_walk_over_obstacles;
-        walk_over_obstacles_fsm.new_state = sm2_idle;
+        robot_fsm.new_state = sm1_walk_around_obstacles;
+        walk_around_obstacles_fsm.new_state = sm2_idle;
         spider.START_WALKING = true;
       } else if (robot_fsm.state == sm1_idle && X){
         robot_fsm.new_state = sm1_stabilize;
@@ -371,11 +381,11 @@ void loop() {
       } else if (robot_fsm.state == sm1_rotate && S){
         robot_fsm.new_state = sm1_idle;
         spider.START_ROTATING = false;
-      } else if (robot_fsm.state == sm1_walk_over_obstacles && S){
+      } else if (robot_fsm.state == sm1_walk_around_obstacles && S){
         robot_fsm.new_state = sm1_idle;
-        walk_over_obstacles_fsm.new_state = sm2_idle;
+        walk_around_obstacles_fsm.new_state = sm2_idle;
         spider.START_WALKING = false;
-      } else if (robot_fsm.state == sm1_walk_over_obstacles && spider.DesiredLocationReached() && walk_over_obstacles_fsm.state == sm2_idle){
+      } else if (robot_fsm.state == sm1_walk_around_obstacles && spider.DesiredLocationReached() && walk_around_obstacles_fsm.state == sm2_idle){
         robot_fsm.new_state = sm1_idle;
       } else if (robot_fsm.state == sm1_stabilize && S){
         robot_fsm.new_state = sm1_idle;
@@ -413,8 +423,9 @@ void loop() {
       set_state(speed_fsm, speed_fsm.new_state);
 
       Serial.println("'ROBOT' FSM STATE: " + String(robot_fsm.state) + " | INPUTS: W = " + String(W) + ", S = " + String(S) + ", I = " + String(I) + ", T = " + T + ", H = " + H + ", L = " + L + ", N = " + N + ", R = " + R + ", l = " + l + ", u = " + u + ", d = " + d);
-      Serial.println("'WALK OVER OBSTACLES' FSM STATE: " + String(walk_over_obstacles_fsm.state));
+      Serial.println("'WALK OVER OBSTACLES' FSM STATE: " + String(walk_around_obstacles_fsm.state));
       Serial.println("Speed interval (" + String(interval_index) + "): " + String(intervals[interval_index]) + " | FASTER = " + String(FASTER) + " | SLOWER = " + String(SLOWER));
+      Serial.println("Robot Angle: " + String(spider.getCurrentAngle()));
       spider.legA.getCurrentJointAngles(t1, t2, t3);
       Serial.print("LEG A: POS = (" + String(spider.legA.getCurrentFootPosition().getX()) + ", " + String(spider.legA.getCurrentFootPosition().getY()) + ", " + String(spider.legA.getCurrentFootPosition().getZ()) + ") | Angles =  " + String(t1) + ", " + String(t2) + ", " + String(t3) + ")\n");
       spider.legB.getCurrentJointAngles(t1, t2, t3);
@@ -460,7 +471,8 @@ void loop() {
         spider.lateral_walk(true, true, true, true, N);
         break;
       case sm1_rotate:
-        spider.continuosRotation(true, true, true, true, true);
+        if (D) {rot_dir = !rot_dir;}
+        spider.continuosRotation(true, true, true, true, true, rot_dir);
         break;
       case sm1_lift:
         spider.lift(true, true, true, true, true);
@@ -468,42 +480,106 @@ void loop() {
       case sm1_lower:
         spider.lower(true, true, true, true, true);
         break;
-      case sm1_walk_over_obstacles:
-        if (walk_over_obstacles_fsm.state == sm2_idle){
-          walk_over_obstacles_fsm.new_state = sm2_walk;
-        } else if (walk_over_obstacles_fsm.state == sm2_walk && M){
-          walk_over_obstacles_fsm.new_state = sm2_lift;
+      case sm1_walk_around_obstacles:
+        if (walk_around_obstacles_fsm.state == sm2_idle){
+          walk_around_obstacles_fsm.new_state = sm2_long_walk;
+        } else if (walk_around_obstacles_fsm.state == sm2_long_walk && M){
+          walk_around_obstacles_fsm.new_state = sm2_rotate_cw1;
+          spider.START_ROTATING = true;
+          Serial.println("==================================================================================================");
+          Serial.println("ROTATING CW1 =====================================================================================");
+          Serial.println("==================================================================================================");
           spider.stop();
-        } else if (walk_over_obstacles_fsm.state == sm2_walk && spider.DesiredLocationReached()){
-          walk_over_obstacles_fsm.new_state == sm2_idle;
-        } else if (walk_over_obstacles_fsm.state == sm2_lift && !M){
-          walk_over_obstacles_fsm.new_state = sm2_walk;
-          spider.lift(true, true, true, true, true);
-        } 
+        } else if (walk_around_obstacles_fsm.state == sm2_rotate_cw1 && spider.getCurrentAngle() >= 80.0){
+          walk_around_obstacles_fsm.new_state = sm2_small_walk1;
+          spider.reInitializePositions();
+          spider.START_WALKING = true;
+          start_x = spider.getCurrentLocation().getX();
+          dist_walked = 0.0;
+          Serial.println("==================================================================================================");
+          Serial.println("WALKING ==========================================================================================");
+          Serial.println("==================================================================================================");
+        } else if (walk_around_obstacles_fsm.state == sm2_small_walk1 && (dist_walked >= 20.0)){
+          walk_around_obstacles_fsm.new_state = sm2_rotate_acw1;
+          spider.START_ROTATING = true;
+          Serial.println("==================================================================================================");
+          Serial.println("ROTATING ACW1 =====================================================================================");
+          Serial.println("==================================================================================================");
+        } else if (walk_around_obstacles_fsm.state == sm2_rotate_acw1 && spider.getCurrentAngle() <= 0.0){
+          walk_around_obstacles_fsm.new_state = sm2_small_walk2;
+          spider.reInitializePositions();
+          spider.START_WALKING = true;
+          start_x = spider.getCurrentLocation().getX();
+          dist_walked = 0.0;
+          Serial.println("==================================================================================================");
+          Serial.println("WALKING ==========================================================================================");
+          Serial.println("==================================================================================================");
+        } else if (walk_around_obstacles_fsm.state == sm2_small_walk2 && (dist_walked >= 20.0)){
+          walk_around_obstacles_fsm.new_state = sm2_rotate_acw2;
+          spider.START_ROTATING = true;
+          Serial.println("==================================================================================================");
+          Serial.println("ROTATING ACW2 =====================================================================================");
+          Serial.println("==================================================================================================");
+        } else if (walk_around_obstacles_fsm.state == sm2_rotate_acw2 && spider.getCurrentAngle() <= -80.0){
+          walk_around_obstacles_fsm.new_state = sm2_small_walk3;
+          spider.reInitializePositions();
+          spider.START_WALKING = true;
+          start_x = spider.getCurrentLocation().getX();
+          dist_walked = 0.0;
+          Serial.println("==================================================================================================");
+          Serial.println("WALKING ==========================================================================================");
+          Serial.println("==================================================================================================");
+        } else if (walk_around_obstacles_fsm.state == sm2_small_walk3 && (dist_walked >= 20.0)){
+          walk_around_obstacles_fsm.new_state = sm2_rotate_cw2;
+          spider.START_ROTATING = true;
+          Serial.println("==================================================================================================");
+          Serial.println("ROTATING CW2 =====================================================================================");
+          Serial.println("==================================================================================================");
+        } else if (walk_around_obstacles_fsm.state == sm2_rotate_cw2 && spider.getCurrentAngle() >= 0.0){
+          walk_around_obstacles_fsm.new_state = sm2_long_walk;
+          spider.reInitializePositions();
+          spider.START_WALKING = true;
+          Serial.println("==================================================================================================");
+          Serial.println("WALKING ==========================================================================================");
+          Serial.println("==================================================================================================");
+        } else if (walk_around_obstacles_fsm.state == sm2_long_walk && spider.DesiredLocationReached()){
+          walk_around_obstacles_fsm.new_state = sm2_idle;
+        }
+        
+        set_state(walk_around_obstacles_fsm, walk_around_obstacles_fsm.new_state);
 
-        set_state(walk_over_obstacles_fsm, walk_over_obstacles_fsm.new_state);
-
-        switch(walk_over_obstacles_fsm.state){
+        switch(walk_around_obstacles_fsm.state){
           case sm2_idle:
-            walk_pos.setX(walk_pos.getX() + 10.0);
+            walk_pos.setX(walk_pos.getX() + 100.0);
             break;
-          case sm2_walk:
+          case sm2_long_walk:
             spider.walkTo(true, true, true, true, true, walk_pos);
             break;
-          case sm2_lift:
-            now = millis();
-            if (last_lift - now > 1000){
-              if (spider.higherPositionAvailable()){
-                spider.lift(true, true, true, true, true);
-                last_lift = now;
-              } else {
-                Serial.println("NO HIGHER POSITION AVAILABLE! ");
-              }
-              Serial.print("HEIGHT INDEX = " + String(spider.getHeigthIndex() + " @" + String(last_lift)));
-            } else {
-              Serial.println("Waiting until next lift");
-            }
-            
+          case sm2_rotate_cw1:
+            spider.continuosRotation(true, true, true, true, true, true);
+            break;
+          case sm2_small_walk1:
+            spider.walkTo(true, true, true, true, true, walk_pos);
+            dist_walked += abs(spider.getCurrentLocation().getX() - start_x);
+            break;
+          case sm2_rotate_acw1:
+            spider.continuosRotation(true, true, true, true, true, false);
+            break;
+          case sm2_small_walk2:
+            spider.walkTo(true, true, true, true, true, walk_pos);
+            dist_walked += abs(spider.getCurrentLocation().getX() - start_x);
+            break;
+          case sm2_rotate_acw2:
+            spider.continuosRotation(true, true, true, true, true, false);
+            break;
+          case sm2_small_walk3:
+            spider.walkTo(true, true, true, true, true, walk_pos);
+            dist_walked += abs(spider.getCurrentLocation().getX() - start_x);
+            break;
+          case sm2_rotate_cw2:
+            spider.continuosRotation(true, true, true, true, true, true);
+            break;
+          default:
             break;
         }
 
@@ -540,7 +616,7 @@ void loop() {
           }
           break;
         case sm3_slower:
-          if (interval_index < 4){
+          if (interval_index < 5){
             interval_index++;
           } else {
             Serial.println("MINIMUM SPEED REACHED!");

@@ -30,6 +30,8 @@ private:
 
     Position Current_location, Desired_location;
 
+    float current_angle;
+
     //Theta 1 for INITAL POSITION, in radians, for Legs A (Innner) and C (Outter)
     #define INNER_theta1  1.7424
     #define OUTTER_theta1 1.1125
@@ -48,6 +50,8 @@ private:
 
     void updateWalkingPositions();
     void stepForward();
+    void toggleRotationDirection();
+    bool rotation_direction; //true = clockwise, false = counterclockwise
 
     typedef struct {
         int state, new_state;
@@ -63,6 +67,8 @@ private:
         sm_compute,
         sm_moving
     };
+
+    int boolToInt(bool b);
 
 public:
 
@@ -80,11 +86,12 @@ public:
     Spider_Robot();
     void attachLegs(LEG& legA, LEG& legB, LEG& legC, LEG& legD);
     void initializePositions(Position init_posA, Position init_posB, Position init_posC, Position init_posD);
+    void reInitializePositions();
 
     void walkTo(bool enableA, bool enableB, bool enableC, bool enableD, bool next, Position Desired_location);
     void lateral_walk(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     void rotate(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
-    void continuosRotation(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
+    void continuosRotation(bool enableA, bool enableB, bool enableC, bool enableD, bool next, bool directio);
     void incline(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     bool lift(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     bool lower(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
@@ -103,6 +110,8 @@ public:
 
     Position getDesiredLocation();
     void setDesiredLocation(Position pos);
+
+    float getCurrentAngle();
 
     bool DesiredLocationReached();
 
