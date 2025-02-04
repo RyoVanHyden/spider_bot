@@ -57,8 +57,6 @@ const int MPU = 0x68; //I2C address of the MPU-6050
 int16_t ax, ay, az, gx, gy, gz;
 float accelX, accelY, accelZ, roll, pitch;
 
-//RESTING POSITION: 80, 140, 140
-
 // Constants for servo control
 #define FREQUENCY 50 // Frequency for servos (50Hz)
 
