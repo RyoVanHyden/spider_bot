@@ -51,11 +51,17 @@ Spider_Robot::Spider_Robot(){
     // Walking positions ------------------------------------------------
 
     walk_z = -5.7;
-    walk_y = 3.75;
-    walk_x_IN = -0.65;
-    walk_x_OUT = 1.85;
-    BIG_f_step_size = 8.65;
-    SMALL_f_step_size = 6.15;
+    //walk_y = 3.75;
+    //walk_x_IN = -0.65;
+    //walk_x_OUT = 1.85;
+    //BIG_f_step_size = 8.65;
+    //SMALL_f_step_size = 6.15;
+
+    walk_y = 7.1;
+    walk_x_IN = -1.22;
+    walk_x_OUT = 3.33;
+    BIG_f_step_size = 12.26;
+    SMALL_f_step_size = 7.70;
 
     W_posA[0] = Position(walk_x_IN, walk_y, walk_z);   
     W_posA[1] = Position(walk_x_IN + BIG_f_step_size, walk_y, walk_z);       
