@@ -750,3 +750,36 @@ void LEG::computeForwardKinematics(float theta1, float theta2, float theta3, flo
     y = yc;
     z = zc;
 }
+
+Position LEG::absoluteToRelative(Position abs_pos){
+
+    float theta1 = atan2(abs_pos.getY(), abs_pos.getX());
+
+    float dx = LEG1_LENGTH*cos(theta1);
+    float dy = LEG1_LENGTH*sin(theta1);
+    float dz = 0.0;
+
+    float xr, yr, zr;
+
+    xr = abs_pos.getX() - current_pos.getX();
+    yr = abs_pos.getY() - current_pos.getY();
+    zr = abs_pos.getZ() - current_pos.getZ();
+
+    return Position(xr, yr, zr);
+}
+
+Position LEG::relativeToAbsolute(Position rel_pos){
+    float theta1 = atan2(rel_pos.getY(), rel_pos.getX());
+
+    float dx = LEG1_LENGTH*cos(theta1);
+    float dy = LEG1_LENGTH*sin(theta1);
+    float dz = 0.0;
+
+    float xa, ya, za;
+
+    xa = rel_pos.getX() + current_pos.getX();
+    ya = rel_pos.getY() + current_pos.getY();
+    za = rel_pos.getZ() + current_pos.getZ();
+
+    return Position(xa, ya, za);
+}

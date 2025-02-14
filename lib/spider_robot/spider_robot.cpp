@@ -16,7 +16,6 @@ Spider_Robot::Spider_Robot(){
     // These positions are CARTESIAN oriented, and refer to the Y and Z coordinates of the foot. The X should be obtained trough Trigonometry
     // for the OUTTER position, the angle is 28.27º, for the INNER position its -9.93º
     
-    
     higher_pos[0][0] = 3.75;
     higher_pos[0][1] = -5.7;
     higher_pos[1][0] = 4.10;
@@ -656,9 +655,8 @@ void Spider_Robot::rotate(bool enableA, bool enableB, bool enableC, bool enableD
                 break;
             case 1:
                 Serial.println("Computing trajectory for pos 0 ----------");
-                
                 if (enableC && !legC.checkTrajectoryComputation(4)){
-                    Serial.println("[LEG C] Desired Position = " + String(R_posC[1].getX()) + ", " + String(R_posC[1].getY()) + ", " + String(R_posC[1].getZ()) + ", Current Position = (" + String(legC.getCurrentFootPosition().getX()) + ", " + String(legC.getCurrentFootPosition().getY()) + ", " + String(legC.getCurrentFootPosition().getZ()) + ")");
+                    Serial.println("[LEG C] Desired Position = " + String(R_posC[1].getX()) + ", " + String(R_posC[1].getY()) + ", " + String(R_posC[1].getZ()));
                     legC.computeTrajectory(R_posC[1], 0, 4);
                 } else {
                     Serial.println("[LEG C] Trajectory 1 already computed (or LEG disabled)");
@@ -670,18 +668,18 @@ void Spider_Robot::rotate(bool enableA, bool enableB, bool enableC, bool enableD
                 break;
             case 2:
                 if (enableD && !legD.checkTrajectoryComputation(4)){
-                    Serial.println("[LEG D] Desired Position = " + String(R_posD[1].getX()) + ", " + String(R_posD[1].getY()) + ", " + String(R_posD[1].getZ()));
-                    legD.computeTrajectory(R_posD[1], 0, 4);
-                } else {
-                    Serial.println("[LEG D] Trajectory 1 already computed (or LEG disabled)");
-                    legD.setDesiredFootPosition(R_posD[1]);
-                    legD.resetTrajectory();
+                        Serial.println("[LEG D] Desired Position = " + String(R_posD[1].getX()) + ", " + String(R_posD[1].getY()) + ", " + String(R_posD[1].getZ()) + ", Current Position = (" + String(legD.getCurrentFootPosition().getX()) + ", " + String(legD.getCurrentFootPosition().getY()) + ", " + String(legD.getCurrentFootPosition().getZ()) + ")");
+                        legD.computeTrajectory(R_posD[1], 0, 4);
+                    } else {
+                        Serial.println("[LEG C] Trajectory 1 already computed (or LEG disabled)");
+                        legD.setDesiredFootPosition(R_posD[1]);
+                        legD.resetTrajectory();
                 }
                 break;
             case 3:
                 if (enableA && !legA.checkTrajectoryComputation(4)){
-                    Serial.println("[LEG A] Desired Position = " + String(R_posA[1].getX()) + ", " + String(R_posA[1].getY()) + ", " + String(R_posA[1].getZ()));
-                    legA.computeTrajectory(R_posA[1], 0, 4);
+                        Serial.println("[LEG A] Desired Position = " + String(R_posA[1].getX()) + ", " + String(R_posA[1].getY()) + ", " + String(R_posA[1].getZ()));
+                        legA.computeTrajectory(R_posA[1], 0, 4);
                 } else {
                     Serial.println("[LEG A] Trajectory 1 already computed (or LEG disabled)");
                     legA.setDesiredFootPosition(R_posA[1]);
@@ -750,7 +748,7 @@ void Spider_Robot::rotate(bool enableA, bool enableB, bool enableC, bool enableD
                 if (enableD && next){legD.moveOnTrajectory(5);}
                 break;
             case 1:
-                if (enableC && next){legC.moveOnTrajectory(4);}
+                if (enableC && next){legD.moveOnTrajectory(4);}
                 break;
             case 2:
                 if (enableD && next){legD.moveOnTrajectory(4);}

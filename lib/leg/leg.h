@@ -51,6 +51,8 @@ private:
         void computeInverseKinematics (float x, float y, float z, float& theta1, float& theta2, float& theta3);
         void computeForwardKinematics (float theta1, float theta2, float theta3, float& x, float& y, float& z);
         void computeBezierCurve(Position c_pos, Position d_pos, Position half_pos, Position (&trajectory)[20], int n_points);
+        Position absoluteToRelative(Position abs_pos);
+        Position relativeToAbsolute(Position rel_pos);
 
         Adafruit_PWMServoDriver pwm_driver;
 

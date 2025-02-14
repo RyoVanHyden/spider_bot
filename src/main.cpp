@@ -10,7 +10,7 @@
 
 uint32_t now, last_time;
 
-uint32_t interval = 100;
+uint32_t interval = 5;
 
 float temp1;
 
@@ -323,7 +323,7 @@ void loop() {
         yp = 0.0;
         zp = 0.0;
 
-        pulse_Length1 = map(119.98 + LEG_A_THETA1_OFFSET, 0.0, 180.0, 150.0, 580.0);
+        pulse_Length1 = map(90, 0.0, 180.0, 150.0, 580.0);
         pulse_Length2 = map(121.68 + LEG_A_THETA2_OFFSET, 0.0, 180.0, 150.0, 580.0);
         pulse_Length3 = map(123.71 + LEG_A_THETA3_OFFSET, 0.0, 180.0, 150.0, 580.0);
         //pulse_length4 = map(tB + LEG_B_THETA3_OFFSET, 0.0, 180.0, 150.0, 580.0);
@@ -332,9 +332,9 @@ void loop() {
 
         //Serial.print("Theta 3 - LEG A = " + String(tA) + " | Theta 3 - LEG B = " + String(tB) + " | Theta 3 - LEG C = " + String(tC)  + " | Theta 3 - LEG D = " + String(tD) + "\n");
 
-        pwm_driver.setPWM(9, 0, pulse_Length1);
-        pwm_driver.setPWM(10, 0, pulse_Length2);
-        pwm_driver.setPWM(11, 0, pulse_Length3); 
+        //pwm_driver.setPWM(9, 0, pulse_Length1);
+        pwm_driver.setPWM(10, 0, pulse_Length1);
+        //pwm_driver.setPWM(11, 0, pulse_Length3); 
         //pwm_driver.setPWM(5, 0, pulse_length4);
 
         //Serial.println("THETA 1 LEG D = 100.49 + " + String(delta_theta) + " = " + String(100.49 + delta_theta) + "\n");
