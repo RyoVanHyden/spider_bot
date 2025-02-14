@@ -776,6 +776,14 @@ float LEG::deg2rad(float deg){
 void LEG::computeInverseKinematics(float x, float y, float z, float& theta1, float& theta2, float& theta3){
     float yr, theta_1, L1, J3, J2;
    // Serial.println("Starting Computation of IK for leg " + String(type));
+    
+    Position abs_pos = Position(x, y, z);
+    Position rel_pos = absoluteToRelative(abs_pos);
+
+    x = rel_pos.getX();
+    y = rel_pos.getY();
+    z = rel_pos.getZ();
+
     switch (type)
     {
     case 'A':
@@ -887,9 +895,12 @@ void LEG::computeForwardKinematics(float theta1, float theta2, float theta3, flo
         break;
     }
 
-    x = xc;
-    y = yc;
-    z = zc;
+    Position rel_pos = Position(xc, yc, zc);
+    Position abs_pos = relativeToAbsolute(rel_pos);
+
+    x = abs_pos.getX();
+    y = abs_pos.getY();
+    z = abs_pos.getZ();
 }
 
 Position LEG::absoluteToRelative(Position abs_pos){
