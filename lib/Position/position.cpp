@@ -54,3 +54,7 @@ bool Position::isOnPosition(Position pos){
         return false;
     }
 }
+
+bool Position::isOnPosition(Position pos, float dx, float dy, float dz){
+    return (compareValues(x, pos.getX(), dx) && compareValues(y, pos.getY(), dy) && compareValues(z, pos.getZ(), dz));
+}

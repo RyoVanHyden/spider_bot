@@ -25,7 +25,12 @@ private:
     Position W_posA[3], W_posB[3], W_posC[3], W_posD[3];
     Position LW_posA[3], LW_posB[3], LW_posC[3], LW_posD[3];
     Position R_posA[3], R_posB[3], R_posC[3], R_posD[3];
+    Position CR_posA[4], CR_posB[4], CR_posC[4], CR_posD[4];
     Position I_posA[3], I_posB[3], I_posC[3], I_posD[3];
+
+    Position Current_location, Desired_location;
+
+    float current_angle;
 
     //Theta 1 for INITAL POSITION, in radians, for Legs A (Innner) and C (Outter)
     #define INNER_theta1  1.7424
@@ -39,14 +44,21 @@ private:
     float BIG_f_step_size, SMALL_f_step_size, lat_step_size;
     float rot_angle;
 
+    float delta_z;
+
+    float robot_step_size;
+
     void updateWalkingPositions();
+    void stepForward();
+    void toggleRotationDirection();
+    bool rotation_direction; //true = clockwise, false = counterclockwise
 
     typedef struct {
         int state, new_state;
         unsigned long tes, tis;
     } fsm;
 
-    fsm walk_fsm, lateral_walk_fsm, rotate_fsm, incline_fsm, lift_fsm;
+    fsm walk_fsm, lateral_walk_fsm, rotate_fsm, incline_fsm, lift_fsm, continuos_rotation_fsm;
 
     void setNewState(fsm& sm, int new_state);
 
@@ -55,6 +67,8 @@ private:
         sm_compute,
         sm_moving
     };
+
+    int boolToInt(bool b);
 
 public:
 
@@ -72,10 +86,12 @@ public:
     Spider_Robot();
     void attachLegs(LEG& legA, LEG& legB, LEG& legC, LEG& legD);
     void initializePositions(Position init_posA, Position init_posB, Position init_posC, Position init_posD);
+    void reInitializePositions();
 
-    void walk(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
+    void walkTo(bool enableA, bool enableB, bool enableC, bool enableD, bool next, Position Desired_location);
     void lateral_walk(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     void rotate(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
+    void continuosRotation(bool enableA, bool enableB, bool enableC, bool enableD, bool next, bool directio);
     void incline(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     bool lift(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
     bool lower(bool enableA, bool enableB, bool enableC, bool enableD, bool next);
@@ -83,9 +99,23 @@ public:
     bool lowerPositionAvailable();
     int getHeigthIndex();
 
+    void stabilise(float roll, float pitch);
+
     void stop();
     bool legsOnDesiredPositions();
     int getPosIndex();
+
+    Position getCurrentLocation();
+    void setCurrentLocation(Position pos);
+
+    Position getDesiredLocation();
+    void setDesiredLocation(Position pos);
+
+    float getCurrentAngle();
+
+    bool DesiredLocationReached();
+
+    void printCRPositions();
 
 };
 

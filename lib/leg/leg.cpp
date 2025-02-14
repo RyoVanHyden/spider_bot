@@ -39,11 +39,20 @@ LEG::LEG(int servo_id1, int servo_id2, int servo_id3, float Length1, float lengt
 
     type = leg_type;
 
-    for (int i = 0; i<15; i++){
+    for (int i = 0; i<wtp; i++){
         W_first_trajectory_points[i] = Position(0,0,0);
         W_second_trajectory_points[i] = Position(0,0,0);
         W_third_trajectory_points[i] = Position(0,0,0);
     }
+
+    W_trajectory1_computed = false;
+    W_trajectory2_computed = false;
+    W_trajectory3_computed = false;
+
+    CR_trajectory1_computed = false;
+    CR_trajectory2_computed = false;
+    CR_trajectory3_computed = false;
+    CR_trajectory4_computed = false;
 
     t_index = 0;
 
@@ -88,7 +97,7 @@ LEG::LEG(){
 
     type = 'C';
 
-    for (int i = 0; i<15; i++){
+    for (int i = 0; i<wtp; i++){
         W_first_trajectory_points[i] = Position(0,0,0);
         W_second_trajectory_points[i] = Position(0,0,0);
         W_third_trajectory_points[i] = Position(0,0,0);
@@ -99,6 +108,11 @@ LEG::LEG(){
     W_trajectory1_computed = false;
     W_trajectory2_computed = false;
     W_trajectory3_computed = false;
+
+    CR_trajectory1_computed = false;
+    CR_trajectory2_computed = false;
+    CR_trajectory3_computed = false;
+    CR_trajectory4_computed = false;
 
     isOnDesiredPosition = true;
     isOnTrajectory = false;
@@ -326,6 +340,43 @@ void LEG::moveOnTrajectory(int trajectory_index){
             isOnTrajectory = false;
         }
         break;
+    case 6:
+        moveTo(CR_first_trajectory_points[t_index]);
+        computeFootPosition();
+        if (current_pos.isOnPosition(CR_first_trajectory_points[t_index])){
+            isOnTrajectory = true;
+        } else {
+            isOnTrajectory = false;
+        }
+        break;
+    case 7:
+        moveTo(CR_second_trajectory_points[t_index]);
+        computeFootPosition();
+        if (current_pos.isOnPosition(CR_second_trajectory_points[t_index])){
+            isOnTrajectory = true;
+        } else {
+            isOnTrajectory = false;
+        }
+        break;
+    case 8:
+        moveTo(CR_third_trajectory_points[t_index]);
+        computeFootPosition();
+        if (current_pos.isOnPosition(CR_third_trajectory_points[t_index])){
+            isOnTrajectory = true;
+        } else {
+            isOnTrajectory = false;
+        }
+        break;
+    case 9:
+        moveTo(CR_fourth_trajectory_points[t_index]);
+        computeFootPosition();
+        if (current_pos.isOnPosition(CR_fourth_trajectory_points[t_index])){
+            isOnTrajectory = true;
+        } else {
+            isOnTrajectory = false;
+        }
+        break;
+
     default:
         break;
     }   
@@ -345,6 +396,25 @@ void LEG::resetTrajectory(){
 
 //Writes the desired angles to the servos, and updates the current joint angles of the leg with those values
 void LEG::quickMove(float dt1, float dt2, float dt3){
+
+    if (dt1 > 170){
+        dt1=170;
+    } else if (dt1 < 5){
+        dt1 = 5;
+    }
+
+    if (dt2 > 170){
+        dt2=170;
+    } else if (dt2 < 5){
+        dt2 = 5;
+    }
+
+    if (dt3 > 170){
+        dt3=170;
+    } else if (dt3 < 5){
+        dt3 = 5;
+    }
+
     desired_theta1 = dt1;
     desired_theta2 = dt2;
     desired_theta3 = dt3;
@@ -419,6 +489,11 @@ void LEG::resetAllTrajectoryComputations(){
     W_trajectory3_computed = false;
     R_trajectory1_computed = false;
     R_trajectory2_computed = false;
+    CR_trajectory1_computed = false;
+    CR_trajectory2_computed = false;
+    CR_trajectory3_computed = false;
+    CR_trajectory4_computed = false;
+    resetTrajectory();
 }
 
 void LEG::computeTrajectory(Position d_pos, int mode, int trajectory_index){
@@ -434,6 +509,7 @@ void LEG::computeTrajectory(Position d_pos, int mode, int trajectory_index){
     desired_pos.setZ(z);
 
     float h_x, h_y, h_z;
+    float t1, t2, t3;
 
     float half_x_distance = abs(x - current_pos.getX())/2;
     if (x > current_pos.getX()){
@@ -441,11 +517,17 @@ void LEG::computeTrajectory(Position d_pos, int mode, int trajectory_index){
     } else {
         h_x = current_pos.getX() - half_x_distance;
     }
-    h_y = y;
+
+    if (trajectory_index == 4 && (type == 'C' || type == 'A')){
+        h_y = y + 4.0;
+    } else {
+        h_y = y;
+    }
+
 
     if (mode == 0){ //SETP
         if (trajectory_index == 4 || trajectory_index == 5){
-            h_z = current_pos.getZ() + 7;
+            h_z = current_pos.getZ() + 6;
         } else if (trajectory_index == 1 || trajectory_index == 2 || trajectory_index == 3){
             h_z = current_pos.getZ() + 8;
         }
@@ -516,7 +598,9 @@ void LEG::computeTrajectory(Position d_pos, int mode, int trajectory_index){
         R_trajectory1_computed = true;
         for (int i = 0; i<rtp; i++){
           R_first_trajectory_points[i] = traject[i];  
-          Serial.println("Trajectory point " + String(i) + " is (" + String(R_first_trajectory_points[i].getX()) + ", " + String(R_first_trajectory_points[i].getY()) + ", " + String(R_first_trajectory_points[i].getZ()) + ")");
+          Serial.print("Trajectory point " + String(i) + " is (" + String(R_first_trajectory_points[i].getX()) + ", " + String(R_first_trajectory_points[i].getY()) + ", " + String(R_first_trajectory_points[i].getZ()) + ")");
+          computeInverseKinematics(R_first_trajectory_points[i].getX(), R_first_trajectory_points[i].getY(), R_first_trajectory_points[i].getZ(), t1, t2, t3);
+          Serial.println(" | Joint angles are: " + String(t1) + ", " + String(t2) + ", " + String(t3));
         }
         break;
     case 5:
@@ -531,6 +615,63 @@ void LEG::computeTrajectory(Position d_pos, int mode, int trajectory_index){
         for (int i = 0; i<rtp; i++){
           R_second_trajectory_points[i] = traject[i];  
           Serial.println("Trajectory point " + String(i) + " is (" + String(R_second_trajectory_points[i].getX()) + ", " + String(R_second_trajectory_points[i].getY()) + ", " + String(R_second_trajectory_points[i].getZ()) + ")");
+        }
+        break;
+    case 6: 	
+        if(checkDesiredPosition()){
+            for (int i = 0; i<rtp; i++){
+                CR_first_trajectory_points[i] = current_pos;
+            }
+            return;
+        } 
+        computeBezierCurve(c_pos, d_pos, half_pos, traject, rtp);
+        CR_trajectory1_computed = true;
+        for (int i = 0; i<rtp; i++){
+          CR_first_trajectory_points[i] = traject[i];  
+          Serial.println("Trajectory point " + String(i) + " is (" + String(CR_first_trajectory_points[i].getX()) + ", " + String(CR_first_trajectory_points[i].getY()) + ", " + String(CR_first_trajectory_points[i].getZ()) + ")");
+        }
+        break;
+    case 7:
+        if(checkDesiredPosition()){
+            for (int i = 0; i<rtp; i++){
+                CR_second_trajectory_points[i] = current_pos;
+            }
+            return;
+        } 
+        computeBezierCurve(c_pos, d_pos, half_pos, traject, rtp);
+        CR_trajectory2_computed = true;
+        for (int i = 0; i<rtp; i++){
+          CR_second_trajectory_points[i] = traject[i];  
+          Serial.println("Trajectory point " + String(i) + " is (" + String(CR_second_trajectory_points[i].getX()) + ", " + String(CR_second_trajectory_points[i].getY()) + ", " + String(CR_second_trajectory_points[i].getZ()) + ")");
+        }
+        break;
+    case 8:
+        if(checkDesiredPosition()){
+            for (int i = 0; i<rtp; i++){
+                CR_third_trajectory_points[i] = current_pos;
+            }
+            return;
+        }
+        computeBezierCurve(c_pos, d_pos, half_pos, traject, rtp);
+        CR_trajectory3_computed = true;
+        for (int i = 0; i<rtp; i++){
+          CR_third_trajectory_points[i] = traject[i];  
+          Serial.println("Trajectory point " + String(i) + " is (" + String(CR_third_trajectory_points[i].getX()) + ", " + String(CR_third_trajectory_points[i].getY()) + ", " + String(CR_third_trajectory_points[i].getZ()) + ")");
+        }
+
+        break;
+    case 9:
+        if(checkDesiredPosition()){
+            for (int i = 0; i<rtp; i++){
+                CR_fourth_trajectory_points[i] = current_pos;
+            }
+            return;
+        }
+        computeBezierCurve(c_pos, d_pos, half_pos, traject, rtp);
+        CR_trajectory4_computed = true;
+        for (int i = 0; i<rtp; i++){
+          CR_fourth_trajectory_points[i] = traject[i];  
+          Serial.println("Trajectory point " + String(i) + " is (" + String(CR_fourth_trajectory_points[i].getX()) + ", " + String(CR_fourth_trajectory_points[i].getY()) + ", " + String(CR_fourth_trajectory_points[i].getZ()) + ")");
         }
         break;
     default:
